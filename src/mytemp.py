@@ -37,4 +37,4 @@ class MyTemp:
             except OSError as e:
                 print('failed get temp due to {}'.format(e))
             count += 1
-            print('Updating temp {} current temp {}'.format(count, self.read()))
+            logger.info('Updating temp {} current temp {}'.format(count, self.read()))
