@@ -8,6 +8,9 @@ else:
     import time
     import uasyncio as asyncio
 from mymqtt import publish
+from mylogger import Logger
+
+logger = Logger.get_logger()
 
 
 class MyRelay:
@@ -20,6 +23,7 @@ class MyRelay:
                  wdt=None,
                  sleep_interval=0.5,
                  debug=False):
+        logger.info('Staring MyRelay')
         self.event_loop = event_loop
         self.debug = debug
         self.sleep_interval = sleep_interval
@@ -70,7 +74,7 @@ class MyRelay:
         self.relay(self.state)
 
     def pause_temp_check(self):
-        print('update last override')
+        logger.info('update last override')
         self.last_override = time.time()
 
     @property
@@ -80,7 +84,7 @@ class MyRelay:
     async def check_changes(self, sleep_time=0.5, button_time_secs=1):
         while True:
             if self.debug:
-                print('polling')
+                logger.info('Polling..')
             await asyncio.sleep(1)
             # if self.button.pressed is True:
             #     self.pause_temp_check()

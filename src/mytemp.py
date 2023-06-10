@@ -12,7 +12,9 @@ except ImportError:
 else:
     import dht
     import uasyncio as asyncio
+from mylogger import Logger
 
+logger = Logger.get_logger()
 
 class MyTemp:
     def __init__(self, pin=4):

@@ -1,7 +1,7 @@
 """relay_control: project for controlling fan using an MCU"""
 
 __license__ = "MIT"
-__version__ = "1.0.1"
+__version__ = "0.0.1"
 __email__ = "daniel@engvalls.eu"
 
 try:
@@ -25,15 +25,19 @@ else:
 
 import gc
 import myconfig
-
-# import mypicoweb
+from myweb import naw
 
 from mybutton import MyButton
 from myrelay import MyRelay
 from mytemp import MyTemp
 from mywatchdog import WDT
 from mywifi import stop_all_wifi, start_ap
-from microdot_asyncio import Microdot
+from mylogger import Logger
+
+logger = Logger.get_logger()
+
+# import mypicoweb
+# from microdot_asyncio import Microdot
 
 WEBREPL_PASSWORD = 'relay'
 CONFIG = {'essid': 'MYWIFI',
@@ -53,20 +57,24 @@ PIN_RELAY = 5
 PIN_PIR = 13
 PIN_DHT22 = 16
 
-app = Microdot()
+# app = Microdot()
 
 
-@app.route('/')
-async def hello(request):
-    return 'Hello, world!'
+# @app.route('/')
+# async def hello(request):
+#     return 'Hello, world!'
+
+async def wait_forever():
+    while True:
+        await asyncio.sleep(3)
 
 
 async def start_relay_control(config):
     wdt = WDT(timeout=30)
     temp_obj = MyTemp(pin=PIN_DHT22)
     button_obj = MyButton()
-    relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True, sleep_interval=2000).start()
-    web_task = asyncio.create_task(app.start_server(port=5050))
+    # relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True, sleep_interval=2000).start()
+    # web_task = asyncio.create_task(app.start_server(port=5050))
 
     # app = mypicoweb.MyPicoWeb(__name__, temp_obj=temp_obj, button_obj=button_obj, relay_obj=relay_obj)
     # app.add_url_rule('/save', web_save)
@@ -84,14 +92,19 @@ async def start_relay_control(config):
     # async_temp_updates = asyncio.create_task(update_temp(temp_obj))
     # app.run(port=5050)
     try:
-        results = await asyncio.gather(web_task, relay_task, return_exceptions=True)
+        # requires more memory
+        # results = await asyncio.gather(web_task, relay_task, return_exceptions=True)
+        relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True,
+                             sleep_interval=2000)
+        asyncio.create_task(relay_task.start())
+        asyncio.create_task(naw.run())
+        await wait_forever()
     except CancelledError:
         print(f'Ending processes')
 
 
-
-
-def main():
+def start():
+    logger.info('starting')
     # check initially how many click
     clicks = blocking_count_clicks(button_pin=PIN_BUTTON, timeout=5)
     if clicks == 1:
@@ -113,4 +126,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    start()
