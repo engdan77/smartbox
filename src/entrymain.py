@@ -1,7 +1,7 @@
 """relay_control: project for controlling fan using an MCU"""
 
 __license__ = "MIT"
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 __email__ = "daniel@engvalls.eu"
 
 try:

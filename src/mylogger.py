@@ -8,6 +8,10 @@ class Logger:
     log_entries = []
 
     @classmethod
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+
+    @classmethod
     def get_logger(cls):
         if cls._logger:
             return cls._logger
