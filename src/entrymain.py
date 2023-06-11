@@ -96,9 +96,13 @@ async def start_relay_control(config):
         # results = await asyncio.gather(web_task, relay_task, return_exceptions=True)
         relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True,
                              sleep_interval=2000)
-        asyncio.create_task(relay_task.start())
+        r = asyncio.create_task(relay_task.start())
         asyncio.create_task(naw.run())
-        await wait_forever()
+        try:
+            await r
+        except Exception as e:
+            logger.info(f'{e.__class__}, {e.args}')
+            await wait_forever()
     except CancelledError:
         print(f'Ending processes')
 

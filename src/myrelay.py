@@ -1,3 +1,5 @@
+import random
+
 try:
     from machine import Pin
 except ImportError:
@@ -46,7 +48,6 @@ class MyRelay:
     async def start(self):
         asyncio.create_task(self.temp.start())
         asyncio.create_task(self.button.start())
-        asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
         # self.event_loop.create_task(self.check_changes(sleep_ms=self.sleep_interval))
         if self.mqtt_enabled:
             # publish MQTT if enabled
@@ -56,6 +57,7 @@ class MyRelay:
                     'relay_control_started',
                     self.mqtt_username,
                     self.mqtt_password)
+        await asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
 
     @property
     def on(self):
@@ -85,6 +87,8 @@ class MyRelay:
         while True:
             if self.debug:
                 logger.info('Polling..')
+                if random.randint(0, 20) >= 19:
+                    raise RuntimeError('provoked error')
             await asyncio.sleep(1)
             # if self.button.pressed is True:
             #     self.pause_temp_check()

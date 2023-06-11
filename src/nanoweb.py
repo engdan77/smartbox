@@ -67,9 +67,10 @@ class Nanoweb:
     STATIC_DIR = './'
     INDEX_FILE = STATIC_DIR + 'index.html'
 
-    def __init__(self, port=80, address='0.0.0.0'):
+    def __init__(self, port=80, address='0.0.0.0', logger=None):
         self.port = port
         self.address = address
+        self.logger = logger
 
     def route(self, route):
         """Route decorator"""
