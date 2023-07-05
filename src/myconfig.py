@@ -3,9 +3,15 @@ try:
 except ImportError:
     import json
 
+from mylogger import Logger
+logger = Logger.get_logger()
+
 
 def get_config(input_default_config=None, config_file='./config.json'):
-    c = {}
+    if input_default_config is None:
+        input_default_config = {}
+        logger.info('WARNING: No default config nor config.json')
+    c = input_default_config
     try:
         c = json.loads(open(config_file).read())
     except (OSError, ValueError) as e:

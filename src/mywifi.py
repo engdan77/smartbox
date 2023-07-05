@@ -7,6 +7,9 @@ except ImportError:
 else:
     import time as time
 
+from mylogger import Logger
+logger = Logger.get_logger()
+
 
 def stop_all_wifi():
     sta_if = network.WLAN(network.STA_IF)
@@ -20,22 +23,25 @@ def start_ap(ssid='fan_control'):
     time.sleep(1)
     ap.active(True)
     ap.config(essid=ssid, authmode=network.AUTH_OPEN)
-    print('AP mode started')
-    print(ap.ifconfig())
+    logger.info('AP mode started')
+    logger.info(ap.ifconfig())
     time.sleep(1)
 
 
 def wifi_connect(essid, password):
     connected = False
     sta_if = network.WLAN(network.STA_IF)
+    if sta_if.isconnected():
+        logger.info('already connected to wifi, exiting')
+        return True
     sta_if.active(False)
     if not sta_if.isconnected():
         sta_if.active(True)
         sta_if.connect(essid, password)
-        print('connecting to network..., pause 3 sec')
+        logger.info('connecting to network..., pause 3 sec')
         time.sleep(3)
         for i in range(1, 10):
-            print('attempt {}'.format(i))
+            logger.info('attempt {}'.format(i))
             time.sleep(1)
             if sta_if.isconnected():
                 connected = True
@@ -46,5 +52,5 @@ def wifi_connect(essid, password):
         connected = True
     if connected:
         time.sleep(1)
-        print('network config:', sta_if.ifconfig())
+        logger.info('network config:', sta_if.ifconfig())
     return connected

@@ -15,6 +15,27 @@ from mylogger import Logger
 logger = Logger.get_logger()
 
 
+def randrange(start, stop=None):
+    if stop is None:
+        stop = start
+        start = 0
+    upper = stop - start
+    bits = 0
+    pwr2 = 1
+    while upper > pwr2:
+        pwr2 <<= 1
+        bits += 1
+    while True:
+        r = random.getrandbits(bits)
+        if r < upper:
+            break
+    return r + start
+
+
+def randint(start, stop):
+    return randrange(start, stop + 1)
+
+
 class MyRelay:
     def __init__(self,
                  relay_pin=12,
@@ -25,7 +46,8 @@ class MyRelay:
                  wdt=None,
                  sleep_interval=0.5,
                  debug=False):
-        logger.info('Staring MyRelay')
+        logger.info('Starting MyRelay')
+        logger.info(f'current config {config}')
         self.event_loop = event_loop
         self.debug = debug
         self.sleep_interval = sleep_interval
@@ -87,7 +109,7 @@ class MyRelay:
         while True:
             if self.debug:
                 logger.info('Polling..')
-                if random.randint(0, 20) >= 19:
+                if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
             await asyncio.sleep(1)
             # if self.button.pressed is True:
@@ -118,4 +140,6 @@ class MyRelay:
                     print('turning off relay due to temp below {}'.format(self.trigger_temp))
                     self.switch_state(False)
             if self.wdt:
+                if self.debug:
+                    logger.info('Calm watchdog down, all okay')
                 self.wdt.feed()

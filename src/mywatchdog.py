@@ -5,6 +5,9 @@ except ImportError:
     machine = Mock()
 import gc
 from sys import platform
+from mylogger import Logger
+
+logger = Logger.get_logger()
 
 
 gc.collect()
@@ -20,18 +23,18 @@ class WDT:
         try:
             with open("watchdog.txt", "r") as f:
                 if f.read() == "True":
-                    print("Reset reason: Watchdog")
+                    logger.info("Reset reason: Watchdog")
         except Exception as e:
-            print(e)  # file probably just does not exist
+            logger.info(e)  # file probably just does not exist
         try:
             with open("watchdog.txt", "w") as f:
                 f.write("False")
         except Exception as e:
-            print("Error saving to file: {!s}".format(e))
+            logger.info("Error saving to file: {!s}".format(e))
             if use_rtc_memory and platform == "esp8266":
                 rtc = machine.RTC()
                 if rtc.memory() == b"WDT reset":
-                    print("Reset reason: Watchdog")
+                    logger.info("Reset reason: Watchdog")
                 rtc.memory(b"")
 
     def _wdt(self, t):
@@ -41,7 +44,7 @@ class WDT:
                 with open("watchdog.txt", "w") as f:
                     f.write("True")
             except Exception as e:
-                print("Error saving to file: {!s}".format(e))
+                logger.info("Error saving to file: {!s}".format(e))
                 if self._use_rtc_memory and platform == "esp8266":
                     rtc = machine.RTC()
                     rtc.memory(b"WDT reset")

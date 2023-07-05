@@ -5,6 +5,11 @@ except ImportError:
     import asyncio
     import errno as uerrno
 
+
+from mylogger import Logger
+
+
+
 class HttpError(Exception):
     pass
 
@@ -71,6 +76,8 @@ class Nanoweb:
         self.port = port
         self.address = address
         self.logger = logger
+        logger = Logger.get_logger()
+        logger.info('NanoWeb instantiated')
 
     def route(self, route):
         """Route decorator"""
@@ -89,6 +96,8 @@ class Nanoweb:
            is the template context
          * callable, the output of which is sent to the client
         """
+        logger = Logger.get_logger()
+        logger.info('generate_output()')
         while True:
             if isinstance(handler, dict):
                 handler = (request.url, handler)
@@ -121,6 +130,8 @@ class Nanoweb:
             break
 
     async def handle(self, reader, writer):
+        logger = Logger.get_logger()
+        logger.info('handle()')
         items = await reader.readline()
         items = items.decode('ascii').split()
         if len(items) != 3:
@@ -205,4 +216,6 @@ class Nanoweb:
                 writer.close()
 
     async def run(self):
+        logger = Logger.get_logger()
+        logger.info(f'Starting web service {self.address}, {self.port}')
         return await asyncio.start_server(self.handle, self.address, self.port)

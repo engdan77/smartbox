@@ -25,19 +25,26 @@ else:
 
 import gc
 import myconfig
-from myweb import naw
+from myweb import start_simple_web
+
+# from myweb import naw
+
+# from microdot_asyncio import Microdot
 
 from mybutton import MyButton
 from myrelay import MyRelay
 from mytemp import MyTemp
 from mywatchdog import WDT
-from mywifi import stop_all_wifi, start_ap
+from mywifi import start_ap
 from mylogger import Logger
+
+# import mypicoweb
+
+DEBUG = False
 
 logger = Logger.get_logger()
 
-# import mypicoweb
-# from microdot_asyncio import Microdot
+
 
 WEBREPL_PASSWORD = 'relay'
 CONFIG = {'essid': 'MYWIFI',
@@ -58,11 +65,19 @@ PIN_PIR = 13
 PIN_DHT22 = 16
 
 # app = Microdot()
-
-
 # @app.route('/')
 # async def hello(request):
 #     return 'Hello, world!'
+
+
+def async_exception_handler(loop, context):
+    logger.info(f'async exception handler {context}')
+
+
+def web_index(req, resp, **kwargs):
+    yield from resp.awrite('foo')
+    gc.collect()
+
 
 async def wait_forever():
     while True:
@@ -76,13 +91,6 @@ async def start_relay_control(config):
     # relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True, sleep_interval=2000).start()
     # web_task = asyncio.create_task(app.start_server(port=5050))
 
-    # app = mypicoweb.MyPicoWeb(__name__, temp_obj=temp_obj, button_obj=button_obj, relay_obj=relay_obj)
-    # app.add_url_rule('/save', web_save)
-    # app.add_url_rule('/status', web_status)
-    # app.add_url_rule('/getconfig', web_getconfig)
-    # app.add_url_rule('/jquery.min.js', web_jquery)
-    # app.add_url_rule('/', web_index)
-
     # async def main(_eth):
     #     logger_task = asyncio.create_task(log_temperature())
     #     server_task = asyncio.create_task(server.start_server(_eth.ifconfig()[0],port=80))
@@ -92,12 +100,24 @@ async def start_relay_control(config):
     # async_temp_updates = asyncio.create_task(update_temp(temp_obj))
     # app.run(port=5050)
     try:
+        loop = asyncio.get_event_loop()
+        loop.set_exception_handler(async_exception_handler)
         # requires more memory
         # results = await asyncio.gather(web_task, relay_task, return_exceptions=True)
-        relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True,
+        relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=DEBUG,
                              sleep_interval=2000)
         r = asyncio.create_task(relay_task.start())
-        asyncio.create_task(naw.run())
+        # more memory
+        # web_task = asyncio.create_task(app.start_server(port=5050))
+        # starting but not working
+        # asyncio.create_task(naw.run())
+
+        # app = mypicoweb.MyPicoWeb(__name__, temp_obj=temp_obj, button_obj=button_obj)
+        # app.add_url_rule('/', web_index)
+        # app.run(host="0.0.0.0", port=5050, log=logger)
+
+        start_simple_web()
+
         try:
             await r
         except Exception as e:
@@ -114,8 +134,10 @@ def start():
     if clicks == 1:
         print('enable AP wifi and webrepl')
         # TODO: Add AP WIFI and webrepl
-    stop_all_wifi()
+    # stop_all_wifi()
     c = CONFIG
+    if not c:
+        logger.info('Create a config.json file')
     wifi_connected = wifi_connect(c['essid'], c['password'])
     if not wifi_connected:
         start_ap()
@@ -123,7 +145,7 @@ def start():
         print('starting webrepl using password {}'.format(WEBREPL_PASSWORD))
         webrepl.start_foreground()
     else:
-        config = myconfig.get_config()
+        config = myconfig.get_config(input_default_config=c)
         asyncio.run(start_relay_control(config))
         del c
         gc.collect()

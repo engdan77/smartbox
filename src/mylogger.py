@@ -1,4 +1,5 @@
 import time
+import gc
 
 class Logger:
     _logger = None
@@ -32,6 +33,21 @@ class Logger:
             self.__class__._init_time = current_time
 
     def info(self, message):
+        current_time = int(time.time()) - self.__class__._init_time
+        m = f'{current_time}: {message}'
+        self.purge_records_and_reset_timer()
+        self.__class__.log_entries.append(m)
+        gc.collect()
+        print(m)
+
+    def error(self, message):
+        current_time = int(time.time()) - self.__class__._init_time
+        m = f'{current_time}: {message}'
+        self.purge_records_and_reset_timer()
+        self.__class__.log_entries.append(m)
+        print(m)
+
+    def warning(self, message):
         current_time = int(time.time()) - self.__class__._init_time
         m = f'{current_time}: {message}'
         self.purge_records_and_reset_timer()
