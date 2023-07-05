@@ -3,8 +3,14 @@ try:
 except ImportError:
     import asyncio
 
-from nanoweb import Nanoweb
 from mylogger import Logger
+import sys
+
+
+def socket_write(writer, data):
+    if 'esp' not in sys.platform:
+        data = data.encode()
+    writer.write(data)
 
 
 async def serve_client(reader, writer):
@@ -22,8 +28,8 @@ async def serve_client(reader, writer):
     logs = '<br/>'.join([_ for _ in logger.get_last_records()])
 
     response = f'foo<br/>{logs}'
-    writer.write(f'HTTP/1.0 200 OK\r\nContent-type: text/html\r\nContent-Length: {len(response)}\r\n\r\n')
-    writer.write(response)
+    socket_write(writer, f'HTTP/1.0 200 OK\r\nContent-type: text/html\r\nContent-Length: {len(response)}\r\n\r\n')
+    socket_write(writer, response)
 
     await writer.drain()
     await writer.wait_closed()
@@ -35,23 +41,3 @@ def start_simple_web(start_loop=False):
     if start_loop:
         loop = asyncio.get_event_loop()
         loop.run_forever()
-
-
-async def api_status(request):
-    """API status endpoint"""
-    await request.write("""HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{"status": "running"}""".encode())
-
-
-async def logs(request):
-    """Return errors"""
-    logger = Logger.get_logger()
-    logger.info('Showing logs')
-    logs = '<br/>'.join([_ for _ in logger.get_last_records()])
-    await request.write(f"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{logs}""".encode())
-
-# naw = Nanoweb(port=5050)
-#
-# naw.routes = {
-#     '/status': api_status,
-#     '/logs': logs
-# }

@@ -27,18 +27,12 @@ import gc
 import myconfig
 from myweb import start_simple_web
 
-# from myweb import naw
-
-# from microdot_asyncio import Microdot
-
 from mybutton import MyButton
 from myrelay import MyRelay
 from mytemp import MyTemp
 from mywatchdog import WDT
 from mywifi import start_ap
 from mylogger import Logger
-
-# import mypicoweb
 
 DEBUG = False
 
@@ -64,11 +58,6 @@ PIN_RELAY = 5
 PIN_PIR = 13
 PIN_DHT22 = 16
 
-# app = Microdot()
-# @app.route('/')
-# async def hello(request):
-#     return 'Hello, world!'
-
 
 def async_exception_handler(loop, context):
     logger.info(f'async exception handler {context}')
@@ -88,36 +77,14 @@ async def start_relay_control(config):
     wdt = WDT(timeout=30)
     temp_obj = MyTemp(pin=PIN_DHT22)
     button_obj = MyButton()
-    # relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=True, sleep_interval=2000).start()
-    # web_task = asyncio.create_task(app.start_server(port=5050))
-
-    # async def main(_eth):
-    #     logger_task = asyncio.create_task(log_temperature())
-    #     server_task = asyncio.create_task(server.start_server(_eth.ifconfig()[0],port=80))
-    #     await asyncio.gather(logger_task, server_task)
-
     gc.collect()
-    # async_temp_updates = asyncio.create_task(update_temp(temp_obj))
-    # app.run(port=5050)
     try:
         loop = asyncio.get_event_loop()
         loop.set_exception_handler(async_exception_handler)
-        # requires more memory
-        # results = await asyncio.gather(web_task, relay_task, return_exceptions=True)
         relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=DEBUG,
                              sleep_interval=2000)
         r = asyncio.create_task(relay_task.start())
-        # more memory
-        # web_task = asyncio.create_task(app.start_server(port=5050))
-        # starting but not working
-        # asyncio.create_task(naw.run())
-
-        # app = mypicoweb.MyPicoWeb(__name__, temp_obj=temp_obj, button_obj=button_obj)
-        # app.add_url_rule('/', web_index)
-        # app.run(host="0.0.0.0", port=5050, log=logger)
-
         start_simple_web()
-
         try:
             await r
         except Exception as e:
