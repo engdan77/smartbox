@@ -34,6 +34,7 @@ from mypir import MyPir
 from mysmoke import MySmoke
 from myrelay import MyRelay
 from mytemp import MyTemp
+from mydisplay import MyDisplay
 from mywatchdog import WDT
 from mywifi import start_ap
 from mylogger import Logger
@@ -82,12 +83,13 @@ async def start_relay_control(config):
     temp_obj = MyTemp(pin=PIN_DHT22)
     button_obj = MyButton(PIN_BUTTON)
     motion_obj = MyPir(PIN_PIR)
+    display_obj = MyDisplay(sda_pin=PIN_OLED_SDA, scl_pin=PIN_OLED_SCL)
     smoke_obj = MySmoke()
     gc.collect()
     try:
         loop = asyncio.get_event_loop()
         loop.set_exception_handler(async_exception_handler)
-        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, config=config, wdt=wdt, debug=DEBUG,
+        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG,
                              sleep_interval=2000)
         r = asyncio.create_task(relay_task.start())
         start_simple_web()

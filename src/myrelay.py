@@ -43,6 +43,7 @@ class MyRelay:
                  temp=None,
                  motion=None,
                  smoke=None,
+                 display=None,
                  event_loop=None,
                  config=None,
                  wdt=None,
@@ -58,6 +59,7 @@ class MyRelay:
         self.button = button
         self.motion = motion
         self.smoke = smoke
+        self.display = display
         self.state = False
         self.mqtt_enabled = config.get('mqtt_enabled', False)
         self.mqtt_broker = config.get('mqtt_broker', None)
@@ -70,6 +72,8 @@ class MyRelay:
         self.temp = temp
         self.last_major_temp = 0
         self.minor_change = 0.5
+        if self.display:
+            display.show_text('Starting')
 
     async def start(self):
         asyncio.create_task(self.temp.start())
