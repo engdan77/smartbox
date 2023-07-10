@@ -12,21 +12,23 @@ except ImportError:
 else:
     import dht
     import uasyncio as asyncio
+    from machine import ADC
+
 from mylogger import Logger
 
 logger = Logger.get_logger()
 
-class MyTemp:
-    def __init__(self, pin=4):
-        self.d = dht.DHT22(Pin(pin))
-        self.temp = 0
+
+class MySmoke:
+    def __init__(self, pin=0):
+        self.p = ADC(pin)
+        self.smoke = 0
 
     def refresh(self):
-        self.d.measure()
-        self.temp = self.d.temperature()
+        self.smoke = self.p.read()
 
     def read(self):
-        return self.temp
+        return self.smoke
 
     async def start(self, refresh_interval=15):
         count = 0
@@ -37,4 +39,4 @@ class MyTemp:
             except OSError as e:
                 print('failed get temp due to {}'.format(e))
             count += 1
-            logger.info('Updating temp {} current temp {}'.format(count, self.read()))
+            logger.info('Updating smoke {} current smoke {}'.format(count, self.read()))

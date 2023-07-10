@@ -42,6 +42,7 @@ class MyRelay:
                  button=None,
                  temp=None,
                  motion=None,
+                 smoke=None,
                  event_loop=None,
                  config=None,
                  wdt=None,
@@ -56,6 +57,7 @@ class MyRelay:
         self.relay = Pin(relay_pin, Pin.OUT)
         self.button = button
         self.motion = motion
+        self.smoke = smoke
         self.state = False
         self.mqtt_enabled = config.get('mqtt_enabled', False)
         self.mqtt_broker = config.get('mqtt_broker', None)
@@ -73,6 +75,7 @@ class MyRelay:
         asyncio.create_task(self.temp.start())
         asyncio.create_task(self.button.start())
         asyncio.create_task(self.motion.start())
+        asyncio.create_task(self.smoke.start())
         # self.event_loop.create_task(self.check_changes(sleep_ms=self.sleep_interval))
         if self.mqtt_enabled:
             # publish MQTT if enabled
