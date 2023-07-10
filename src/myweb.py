@@ -7,7 +7,9 @@ from mylogger import Logger
 import sys
 
 
-def socket_write(writer, data):
+def socket_write(writer, data, content_type='text/html'):
+    headers = f'HTTP/1.0 200 OK\r\nContent-type: {content_type}\r\nContent-Length: {len(data)}\r\n\r\n'
+    data = headers + data
     if 'esp' not in sys.platform:
         data = data.encode()
     writer.write(data)
@@ -23,13 +25,15 @@ async def serve_client(reader, writer):
 
     request = str(request_line)
 
-    logger = Logger.get_logger()
-    logger.info('Showing logs')
-    logs = '<br/>'.join([_ for _ in logger.get_last_records()])
-
-    response = f'foo<br/>{logs}'
-    socket_write(writer, f'HTTP/1.0 200 OK\r\nContent-type: text/html\r\nContent-Length: {len(response)}\r\n\r\n')
-    socket_write(writer, response)
+    if 'logs' in request:
+        logger = Logger.get_logger()
+        logger.info('Showing logs')
+        logs = '<br/>'.join([_ for _ in logger.get_last_records()])
+        response = f'Logs:<br/>{logs}'
+        socket_write(writer, response)
+    else:
+        response = 'No valid command'
+        socket_write(writer, response)
 
     await writer.drain()
     await writer.wait_closed()

@@ -12,6 +12,10 @@ else:
     import uasyncio as asyncio
     import time as time
 
+from mylogger import Logger
+
+logger= Logger.get_logger()
+
 
 class MyButton:
     def __init__(self, button_pin=14, event_loop=None):
@@ -31,7 +35,7 @@ class MyButton:
             p = Pin(self.button_pin, Pin.IN, Pin.PULL_UP)
             if bool(p.value()) is False:
                 self.pressed_queue.append(True)
-                print('button pressed')
+                logger.info('button pressed')
                 await asyncio.sleep(bounce_secs)
 
     @property
@@ -54,6 +58,6 @@ def blocking_count_clicks(button_pin=14, timeout=5, debounce_ms=5, sleep_ms=10):
                 time.sleep_ms(debounce_ms)
             if not any(being_pressed):
                 press_count += 1
-                print('button pressed')
+                logger.info('button pressed')
         time.sleep_ms(sleep_ms)
     return press_count

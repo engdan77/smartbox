@@ -4,6 +4,8 @@ __license__ = "MIT"
 __version__ = "0.0.3"
 __email__ = "daniel@engvalls.eu"
 
+
+
 try:
     import machine
 
@@ -28,6 +30,7 @@ import myconfig
 from myweb import start_simple_web
 
 from mybutton import MyButton
+from mypir import MyPir
 from myrelay import MyRelay
 from mytemp import MyTemp
 from mywatchdog import WDT
@@ -76,12 +79,13 @@ async def wait_forever():
 async def start_relay_control(config):
     wdt = WDT(timeout=30)
     temp_obj = MyTemp(pin=PIN_DHT22)
-    button_obj = MyButton()
+    button_obj = MyButton(PIN_BUTTON)
+    motion_obj = MyPir(PIN_PIR)
     gc.collect()
     try:
         loop = asyncio.get_event_loop()
         loop.set_exception_handler(async_exception_handler)
-        relay_task = MyRelay(button=button_obj, temp=temp_obj, config=config, wdt=wdt, debug=DEBUG,
+        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, config=config, wdt=wdt, debug=DEBUG,
                              sleep_interval=2000)
         r = asyncio.create_task(relay_task.start())
         start_simple_web()
