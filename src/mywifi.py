@@ -7,6 +7,8 @@ except ImportError:
 else:
     import time as time
 
+import sys
+
 from mylogger import Logger
 logger = Logger.get_logger()
 
@@ -26,6 +28,16 @@ def start_ap(ssid='fan_control'):
     logger.info('AP mode started')
     logger.info(ap.ifconfig())
     time.sleep(1)
+
+
+def get_ip():
+    if 'esp' in sys.platform:
+        network_type = network.STA_IF
+        return network.WLAN(network_type).ifconfig()
+    else:
+        import socket
+        hostname = socket.gethostname()
+        return socket.gethostbyname(hostname)
 
 
 def wifi_connect(essid, password):

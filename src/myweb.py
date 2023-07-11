@@ -16,9 +16,9 @@ def socket_write(writer, data, content_type='text/html'):
 
 
 async def serve_client(reader, writer):
-    print("Client connected")
+    logger.info("Client connected")
     request_line = await reader.readline()
-    print("Request:", request_line)
+    logger.info("Request:", request_line)
     # We are not interested in HTTP request headers, skip them
     while await reader.readline() != b"\r\n":
         pass
@@ -37,7 +37,7 @@ async def serve_client(reader, writer):
 
     await writer.drain()
     await writer.wait_closed()
-    print("Client disconnected")
+    logger.info("Client disconnected")
 
 
 def start_simple_web(start_loop=False):

@@ -4,6 +4,7 @@ __license__ = "MIT"
 __version__ = "0.0.3"
 __email__ = "daniel@engvalls.eu"
 
+from mymem import get_mem
 from mysmoke import MySmoke
 
 try:
@@ -13,6 +14,7 @@ except ImportError:
     import asyncio
     from unittest.mock import Mock
     WDT = Mock()
+    machine = Mock()
     blocking_count_clicks = Mock(return_value=0)
     wifi_connect = Mock(return_value=True)
     stop_all_wifi = Mock()
@@ -28,6 +30,7 @@ else:
 import gc
 import myconfig
 from myweb import start_simple_web
+from mywifi import get_ip
 
 from mybutton import MyButton
 from mypir import MyPir
@@ -65,7 +68,9 @@ PIN_DHT22 = 16
 
 
 def async_exception_handler(loop, context):
-    logger.info(f'async exception handler {context}')
+    print('async exception handler restarting')
+    logger.info(f'async exception handler')
+    machine.reset()
 
 
 def web_index(req, resp, **kwargs):
@@ -79,18 +84,18 @@ async def wait_forever():
 
 
 async def start_relay_control(config):
-    wdt = WDT(timeout=30)
-    temp_obj = MyTemp(pin=PIN_DHT22)
-    button_obj = MyButton(PIN_BUTTON)
-    motion_obj = MyPir(PIN_PIR)
-    display_obj = MyDisplay(sda_pin=PIN_OLED_SDA, scl_pin=PIN_OLED_SCL)
-    smoke_obj = MySmoke()
-    gc.collect()
+
     try:
         loop = asyncio.get_event_loop()
+        wdt = WDT(timeout=30)
+        temp_obj = MyTemp(pin=PIN_DHT22)
+        smoke_obj = MySmoke()
+        motion_obj = MyPir(PIN_PIR)
+        button_obj = MyButton(PIN_BUTTON, event_loop=loop)
+        display_obj = MyDisplay(sda_pin=PIN_OLED_SDA, scl_pin=PIN_OLED_SCL)
+        gc.collect()
         loop.set_exception_handler(async_exception_handler)
-        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG,
-                             sleep_interval=2000)
+        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG, sleep_interval=2000)
         r = asyncio.create_task(relay_task.start())
         start_simple_web()
         try:
@@ -104,6 +109,9 @@ async def start_relay_control(config):
 
 def start():
     logger.info('starting')
+    logger.info(f'mem_free: {get_mem()}')
+    logger.info(f'IP: {get_ip()}')
+    gc.collect()
     # check initially how many click
     clicks = blocking_count_clicks(button_pin=PIN_BUTTON, timeout=5)
     if clicks == 1:

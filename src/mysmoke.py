@@ -3,11 +3,7 @@ try:
 except ImportError:
     from unittest.mock import Mock
     Pin = Mock()
-    dht = Mock()
-    dht_instance = Mock()
-    dht_instance.temperature.return_value = 22
-    dht.DHT22.return_value = dht_instance
-
+    ADC = Mock()
     import asyncio
 else:
     import dht

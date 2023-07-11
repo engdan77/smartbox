@@ -4,7 +4,7 @@ import gc
 class Logger:
     _logger = None
     _init_time = None
-    _keep_last = 100
+    _keep_last = 10
     _max_time = 1000
     log_entries = []
 
@@ -31,14 +31,19 @@ class Logger:
         current_time = int(time.time())
         if current_time > self.__class__._init_time + self.__class__._max_time:
             self.__class__._init_time = current_time
+        del keep_last
+        del current_time
+        gc.collect()
 
     def info(self, message):
         current_time = int(time.time()) - self.__class__._init_time
         m = f'{current_time}: {message}'
         self.purge_records_and_reset_timer()
         self.__class__.log_entries.append(m)
-        gc.collect()
         print(m)
+        del m
+        del current_time
+        gc.collect()
 
     def error(self, message):
         current_time = int(time.time()) - self.__class__._init_time
@@ -46,6 +51,9 @@ class Logger:
         self.purge_records_and_reset_timer()
         self.__class__.log_entries.append(m)
         print(m)
+        del m
+        del current_time
+        gc.collect()
 
     def warning(self, message):
         current_time = int(time.time()) - self.__class__._init_time
@@ -53,3 +61,6 @@ class Logger:
         self.purge_records_and_reset_timer()
         self.__class__.log_entries.append(m)
         print(m)
+        del m
+        del current_time
+        gc.collect()

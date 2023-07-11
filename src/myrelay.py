@@ -11,6 +11,7 @@ else:
     import uasyncio as asyncio
 from mymqtt import publish
 from mylogger import Logger
+import gc
 
 logger = Logger.get_logger()
 
@@ -76,19 +77,24 @@ class MyRelay:
             display.show_text('Starting')
 
     async def start(self):
-        asyncio.create_task(self.temp.start())
-        asyncio.create_task(self.button.start())
-        asyncio.create_task(self.motion.start())
-        asyncio.create_task(self.smoke.start())
-        # self.event_loop.create_task(self.check_changes(sleep_ms=self.sleep_interval))
+        if self.temp:
+            asyncio.create_task(self.temp.start())
+        if self.button:
+            asyncio.create_task(self.button.start())
+        if self.motion:
+            asyncio.create_task(self.motion.start())
+        if self.smoke:
+            asyncio.create_task(self.smoke.start())
         if self.mqtt_enabled:
             # publish MQTT if enabled
+            logger.info('Publishing MQTT start message')
             publish('relay_control_client',
                     self.mqtt_broker,
                     '/notification/message',
                     'relay_control_started',
                     self.mqtt_username,
                     self.mqtt_password)
+            logger.info('Completed publishing start message')
         await asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
 
     @property
@@ -104,7 +110,7 @@ class MyRelay:
             self.state = not self.state
         else:
             self.state = state
-        print('changing state to {}'.format(self.state))
+        logger.info('changing state to {}'.format(self.state))
         self.relay(self.state)
 
     def pause_temp_check(self):
@@ -122,34 +128,22 @@ class MyRelay:
                 if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
             await asyncio.sleep(1)
-            # if self.button.pressed is True:
-            #     self.pause_temp_check()
-            #     print('switching state to {} due to button pressed, '
-            #           'waiting {} secs for further press'.format(not self.state, button_time_secs))
-            #     self.switch_state()
-            #     await asyncio.sleep(button_time_secs)
-            current_temp = self.temp.read()
-            if abs(current_temp - self.last_major_temp) >= self.minor_change:
-                self.last_major_temp = current_temp
-                if self.mqtt_enabled:
-                    # publish MQTT if enabled
-                    print('publishing {} to broker {} topic {}'.format(current_temp, self.mqtt_broker, self.mqtt_topic))
-                    publish(b'relay_control_client',
-                            self.mqtt_broker,
-                            self.mqtt_topic,
-                            current_temp,
-                            self.mqtt_username,
-                            self.mqtt_password)
-
-            if self.temp and not self.in_pause_mode:
-                if current_temp >= self.trigger_temp and self.on is False:
-                    print('turning on relay due to temp above {}'.format(self.trigger_temp))
-                    self.switch_state(True)
-                    self.pause_temp_check()
-                elif current_temp < self.trigger_temp and self.on is True:
-                    print('turning off relay due to temp below {}'.format(self.trigger_temp))
-                    self.switch_state(False)
+            if self.temp:
+                current_temp = self.temp.read()
+                if abs(current_temp - self.last_major_temp) >= self.minor_change:
+                    self.last_major_temp = current_temp
+                    if self.mqtt_enabled:
+                        # publish MQTT if enabled
+                        logger.info('publishing {} to broker {} topic {}'.format(current_temp, self.mqtt_broker, self.mqtt_topic))
+                        publish(b'relay_control_client',
+                                self.mqtt_broker,
+                                self.mqtt_topic,
+                                current_temp,
+                                self.mqtt_username,
+                                self.mqtt_password)
             if self.wdt:
                 if self.debug:
                     logger.info('Calm watchdog down, all okay')
                 self.wdt.feed()
+            gc.collect()
+            logger.info(f'mem_free: {gc.mem_free()}')
