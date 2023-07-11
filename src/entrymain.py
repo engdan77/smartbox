@@ -4,6 +4,8 @@ __license__ = "MIT"
 __version__ = "0.0.3"
 __email__ = "daniel@engvalls.eu"
 
+import sys
+
 from mymem import get_mem
 from mysmoke import MySmoke
 
@@ -68,9 +70,10 @@ PIN_DHT22 = 16
 
 
 def async_exception_handler(loop, context):
-    print('async exception handler restarting')
     logger.info(f'async exception handler')
-    machine.reset()
+    if 'esp' in sys.platform:
+        print('async exception handler restarting')
+        machine.reset()
 
 
 def web_index(req, resp, **kwargs):

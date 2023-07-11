@@ -9,12 +9,13 @@ def publish(client='umqtt_client', broker='127.0.0.1', topic='/mytopic/foo', mes
     logger.info(f'MQTT publish, broker: {broker}, topic: {topic}, message: {message}, username: {username}, password: {password}')
     c = MQTTClient(client, broker, user=username, password=password)
     try:
+        logger.info(f'attempt to connect to mqtt {broker}')
         c.connect()
     except OSError as e:
         print('unable to connect to mqtt {} with error {}'.format(broker, e))
     else:
         # has to be bytes
-        logger.attempt(f'try to publish {message}')
-        c.publish(str(topic).encode(), str(message).encode())
+        logger.info(f'try to publish {message}')
+        c.publish(topic, str(message))
         c.disconnect()
     logger.info('MQTT sent')
