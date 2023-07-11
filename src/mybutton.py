@@ -21,9 +21,11 @@ logger= Logger.get_logger()
 class MyButton:
     def __init__(self, button_pin=14, event_loop=None):
         self.event_loop = event_loop
-        self.pressed_queue = deque((), 10)
+        self.single_pressed_queue = deque((), 10)
         self.button_pin = button_pin
         self.multi_press_interval_started = False
+        self.button_clicks = deque((), 10)
+        self.events = {}
 
     async def start(self):
         if self.event_loop:
@@ -40,11 +42,10 @@ class MyButton:
                 for i in range(20):
                     await asyncio.sleep(0.1)
                     if p.value():
-                        if self.multi_press_interval_started:
-                            logger.info('Skipping creating background check multi-press already in progress')
-                        self.pressed_queue.append(True)
-                        await asyncio.sleep(0.1)
-                        self.event_loop.create_task(self.start_multi_press_check())
+                        self.single_pressed_queue.append(True)
+                        # await asyncio.sleep(0.1)
+                        if not self.multi_press_interval_started:
+                            self.event_loop.create_task(self.start_multi_press_check())
                         gc.collect()
                         break
             del p
@@ -59,26 +60,37 @@ class MyButton:
                     logger.info('No multi-press in progress')
                     break
         self.multi_press_interval_started = True
-        count_press = await self.count_presses()
+        count_press = await self._count_presses()
         logger.info(f'count_press: {count_press}')
+        if count_press:
+            self.run_event(int(count_press))
         self.multi_press_interval_started = False
         gc.collect()
 
-    async def count_presses(self, total_interval_time=2):
+    async def _count_presses(self, total_interval_time=2):
         gc.collect()
         logger.info('Waiting for 2 secs for all presses')
         press_count = 0
         await asyncio.sleep(total_interval_time)
         for _ in range(10):
-            logger.info(f'attempt {_}')
             try:
                 logger.info(f'Increase press count by one, current: {press_count}')
-                p = self.pressed_queue.popleft()
+                p = self.single_pressed_queue.popleft()
                 press_count += 1
             except (ValueError, IndexError):
                 logger.info(f'Queue empty, current: {press_count}')
+                self.button_clicks.append(press_count)
                 return press_count
             gc.collect()
+
+    def run_event(self, number_of_presses):
+        if number_of_presses in self.events.keys():
+            func, args, kwargs = self.events[number_of_presses]
+            func(*args, **kwargs)
+        logger.info(f'No function defined for {number_of_presses} clicks')
+
+    def add_event(self, number_of_presses, func, args, kwargs):
+        self.events[number_of_presses] = (func, args, kwargs)
 
 
 def blocking_count_clicks(button_pin=14, timeout=5, debounce_ms=5, sleep_ms=10):
