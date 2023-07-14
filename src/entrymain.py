@@ -70,7 +70,7 @@ PIN_DHT22 = 16
 
 
 def async_exception_handler(loop, context):
-    logger.info(f'async exception handler')
+    logger.info(f'async exception handler: {context}')
     if 'esp' in sys.platform:
         print('async exception handler restarting')
         machine.reset()
@@ -98,7 +98,7 @@ async def start_relay_control(config):
         display_obj = MyDisplay(sda_pin=PIN_OLED_SDA, scl_pin=PIN_OLED_SCL)
         gc.collect()
         loop.set_exception_handler(async_exception_handler)
-        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG, sleep_interval=2000)
+        relay_task = MyRelay(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG, event_loop=loop, sleep_interval=2000)
         r = asyncio.create_task(relay_task.start())
         start_simple_web()
         try:

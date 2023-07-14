@@ -20,10 +20,12 @@ class MyTemp:
     def __init__(self, pin=4):
         self.d = dht.DHT22(Pin(pin))
         self.temp = 0
+        self.humid = 0
 
     def refresh(self):
         self.d.measure()
         self.temp = self.d.temperature()
+        self.humid = self.d.humidity()
 
     def read(self):
         return self.temp

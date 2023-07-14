@@ -71,10 +71,10 @@ class MyRelay:
         self.override_secs = int(config.get('override_secs', 60))
         self.last_override = 0
         self.temp = temp
-        self.last_major_temp = 0
-        self.minor_change = 0.5
+        self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0}
+        self.sensor_thresholds = {'temp': 0.5, 'humid': 1, 'smoke': 1}
         if self.display:
-            display.show_text('Starting')
+            display.upsert_screen('info', 'info screen')
 
     async def start(self):
         if self.temp:
@@ -85,6 +85,8 @@ class MyRelay:
             asyncio.create_task(self.motion.start())
         if self.smoke:
             asyncio.create_task(self.smoke.start())
+        if self.display:
+            asyncio.create_task(self.display.start())
         if self.mqtt_enabled:
             # publish MQTT if enabled
             logger.info('Publishing MQTT start message')
@@ -128,22 +130,31 @@ class MyRelay:
                 if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
             await asyncio.sleep(1)
-            if self.temp:
-                current_temp = self.temp.read()
-                if abs(current_temp - self.last_major_temp) >= self.minor_change:
-                    self.last_major_temp = current_temp
-                    if self.mqtt_enabled:
-                        # publish MQTT if enabled
-                        logger.info('publishing {} to broker {} topic {}'.format(current_temp, self.mqtt_broker, self.mqtt_topic))
-                        publish(b'relay_control_client',
-                                self.mqtt_broker,
-                                self.mqtt_topic,
-                                current_temp,
-                                self.mqtt_username,
-                                self.mqtt_password)
+            for item in ('temp', 'smoke'):
+                if getattr(self, item):
+                    await self.mqtt_sensor_update(item)
             if self.wdt:
                 if self.debug:
                     logger.info('Calm watchdog down, all okay')
                 self.wdt.feed()
             gc.collect()
             logger.info(f'mem_free: {gc.mem_free()}')
+
+    def publish_mqtt(self, item, data):
+        if self.mqtt_enabled:
+            # publish MQTT if enabled
+            logger.info(f'publishing {item}: {data}')
+            publish(b'relay_control_client',
+                    self.mqtt_broker,
+                    f'{self.mqtt_topic}/{item}',
+                    data,
+                    self.mqtt_username,
+                    self.mqtt_password)
+
+    async def mqtt_sensor_update(self, item):
+        current_value = getattr(self, item).read()
+        if abs(current_value - self.last_major_reading[item]) >= self.sensor_thresholds[item]:
+            self.last_major_reading[item] = current_value
+            self.publish_mqtt(item, current_value)
+            if self.display:
+                self.display.upsert_screen(item, f'{item}: {current_value}')
