@@ -23,7 +23,7 @@ class MySmoke:
     def refresh(self):
         self.smoke = self.p.read()
 
-    def read(self):
+    def read_smoke(self):
         return self.smoke
 
     async def start(self, refresh_interval=15):
@@ -35,4 +35,4 @@ class MySmoke:
             except OSError as e:
                 print('failed get temp due to {}'.format(e))
             count += 1
-            logger.info('Updating smoke {} current smoke {}'.format(count, self.read()))
+            logger.info('Updating smoke {} current smoke {}'.format(count, self.read_smoke()))

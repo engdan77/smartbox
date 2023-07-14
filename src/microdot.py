@@ -423,7 +423,7 @@ class Request():
             if self.content_length and \
                     self.content_length <= Request.max_body_length:
                 while len(self._body) < self.content_length:
-                    data = self._stream.read(
+                    data = self._stream.read_smoke(
                         self.content_length - len(self._body))
                     if len(data) == 0:  # pragma: no cover
                         raise EOFError()

@@ -195,7 +195,7 @@ class Response(BaseResponse):
                         return next(response.body)
                     except StopIteration:
                         raise StopAsyncIteration
-                buf = response.body.read(response.send_file_buffer_size)
+                buf = response.body.read_smoke(response.send_file_buffer_size)
                 if _iscoroutine(buf):  # pragma: no cover
                     buf = await buf
                 if len(buf) < response.send_file_buffer_size:

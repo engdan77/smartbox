@@ -71,6 +71,7 @@ class MyRelay:
         self.override_secs = int(config.get('override_secs', 60))
         self.last_override = 0
         self.temp = temp
+        self.humid = temp
         self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0}
         self.sensor_thresholds = {'temp': 0.5, 'humid': 1, 'smoke': 1}
         if self.display:
@@ -130,7 +131,7 @@ class MyRelay:
                 if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
             await asyncio.sleep(1)
-            for item in ('temp', 'smoke'):
+            for item in ('temp', 'humid', 'smoke'):
                 if getattr(self, item):
                     await self.mqtt_sensor_update(item)
             if self.wdt:
@@ -152,7 +153,8 @@ class MyRelay:
                     self.mqtt_password)
 
     async def mqtt_sensor_update(self, item):
-        current_value = getattr(self, item).read()
+        current_value = getattr(getattr(self, item), f'read_{item}')()
+        logger.info(f'current value {current_value}')
         if abs(current_value - self.last_major_reading[item]) >= self.sensor_thresholds[item]:
             self.last_major_reading[item] = current_value
             self.publish_mqtt(item, current_value)

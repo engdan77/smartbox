@@ -44,7 +44,7 @@ class MyDisplay:
         if not self.screens:
             return
         self.current_screen += 1
-        if self.current_screen >= len(self.screens):
+        if self.current_screen > len(self.screens):
             self.current_screen = 1
         logger.info(f'current screen switched to {self.current_screen}')
 

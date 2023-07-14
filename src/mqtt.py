@@ -39,7 +39,7 @@ class MQTTClient:
         n = 0
         sh = 0
         while 1:
-            b = self.sock.read(1)[0]
+            b = self.sock.read_smoke(1)[0]
             n |= (b & 0x7f) << sh
             if not b & 0x80:
                 return n
@@ -136,9 +136,9 @@ class MQTTClient:
             while 1:
                 op = self.wait_msg()
                 if op == 0x40:
-                    sz = self.sock.read(1)
+                    sz = self.sock.read_smoke(1)
                     assert sz == b"\x02"
-                    rcv_pid = self.sock.read(2)
+                    rcv_pid = self.sock.read_smoke(2)
                     rcv_pid = rcv_pid[0] << 8 | rcv_pid[1]
                     if pid == rcv_pid:
                         return
@@ -157,7 +157,7 @@ class MQTTClient:
         while 1:
             op = self.wait_msg()
             if op == 0x90:
-                resp = self.sock.read(4)
+                resp = self.sock.read_smoke(4)
                 #print(resp)
                 assert resp[1] == pkt[2] and resp[2] == pkt[3]
                 if resp[3] == 0x80:
@@ -169,29 +169,29 @@ class MQTTClient:
     # set by .set_callback() method. Other (internal) MQTT
     # messages processed internally.
     def wait_msg(self):
-        res = self.sock.read(1)
+        res = self.sock.read_smoke(1)
         self.sock.setblocking(True)
         if res is None:
             return None
         if res == b"":
             raise OSError(-1)
         if res == b"\xd0":  # PINGRESP
-            sz = self.sock.read(1)[0]
+            sz = self.sock.read_smoke(1)[0]
             assert sz == 0
             return None
         op = res[0]
         if op & 0xf0 != 0x30:
             return op
         sz = self._recv_len()
-        topic_len = self.sock.read(2)
+        topic_len = self.sock.read_smoke(2)
         topic_len = (topic_len[0] << 8) | topic_len[1]
-        topic = self.sock.read(topic_len)
+        topic = self.sock.read_smoke(topic_len)
         sz -= topic_len + 2
         if op & 6:
-            pid = self.sock.read(2)
+            pid = self.sock.read_smoke(2)
             pid = pid[0] << 8 | pid[1]
             sz -= 2
-        msg = self.sock.read(sz)
+        msg = self.sock.read_smoke(sz)
         self.cb(topic, msg)
         if op & 6 == 2:
             pkt = bytearray(b"\x40\x02\0\0")

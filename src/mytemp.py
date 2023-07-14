@@ -27,8 +27,11 @@ class MyTemp:
         self.temp = self.d.temperature()
         self.humid = self.d.humidity()
 
-    def read(self):
+    def read_temp(self):
         return self.temp
+
+    def read_humid(self):
+        return self.humid
 
     async def start(self, refresh_interval=15):
         count = 0
@@ -39,4 +42,4 @@ class MyTemp:
             except OSError as e:
                 print('failed get temp due to {}'.format(e))
             count += 1
-            logger.info('Updating temp {} current temp {}'.format(count, self.read()))
+            logger.info('Updating temp {} current temp {}'.format(count, self.read_temp()))
