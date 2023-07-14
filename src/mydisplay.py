@@ -17,7 +17,7 @@ logger = Logger.get_logger()
 
 
 class MyDisplay:
-    def __init__(self, sda_pin=4, scl_pin=14, width=128, height=64, secs_between_screens=3):
+    def __init__(self, sda_pin=4, scl_pin=14, width=128, height=64, secs_between_screens=10):
         i2c = I2C(sda=Pin(sda_pin), scl=Pin(scl_pin))
         self.display = SSD1306_I2C(width, height, i2c)
         self.screens = {'main': 'Daniels smarta..'}

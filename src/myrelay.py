@@ -78,16 +78,10 @@ class MyRelay:
             display.upsert_screen('info', 'info screen')
 
     async def start(self):
-        if self.temp:
-            asyncio.create_task(self.temp.start())
-        if self.button:
-            asyncio.create_task(self.button.start())
-        if self.motion:
-            asyncio.create_task(self.motion.start())
-        if self.smoke:
-            asyncio.create_task(self.smoke.start())
-        if self.display:
-            asyncio.create_task(self.display.start())
+        for item in ('temp', 'button', 'motion', 'smoke', 'display'):
+            instance = getattr(self, item, None)
+            if instance:
+                asyncio.create_task(instance.start())
         if self.mqtt_enabled:
             # publish MQTT if enabled
             logger.info('Publishing MQTT start message')
