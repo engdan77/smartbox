@@ -33,7 +33,7 @@ class MyButton:
         else:
             await self.check_presses()
 
-    async def check_presses(self, sleep_time=0.3, bounce_secs=1):
+    async def check_presses(self, sleep_time=0.2):
         while True:
             await asyncio.sleep(sleep_time)
             p = Pin(self.button_pin, Pin.IN, Pin.PULL_UP)
@@ -43,7 +43,6 @@ class MyButton:
                     await asyncio.sleep(0.1)
                     if p.value():
                         self.single_pressed_queue.append(True)
-                        # await asyncio.sleep(0.1)
                         if not self.multi_press_interval_started:
                             self.event_loop.create_task(self.start_multi_press_check())
                         gc.collect()
@@ -67,7 +66,7 @@ class MyButton:
         self.multi_press_interval_started = False
         gc.collect()
 
-    async def _count_presses(self, total_interval_time=2):
+    async def _count_presses(self, total_interval_time=1.5):
         gc.collect()
         logger.info('Waiting for 2 secs for all presses')
         press_count = 0
