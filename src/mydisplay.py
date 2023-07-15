@@ -22,22 +22,40 @@ class MyDisplay:
         self.display = SSD1306_I2C(width, height, i2c)
         self.screens = {'main': 'Daniels smarta..'}
         self.current_screen = 0
+        self.last_screen = self.current_screen
         self.secs_between_screens = secs_between_screens
+        self.next_screen_timer = 0
+        self.update_interval = 0.5
+        self.count_between_screen_updates = self.secs_between_screens / self.update_interval
+        self.current_update_count = 0
 
     def upsert_screen(self, title, content):
         self.screens[title] = content
 
+    async def screen_expired(self):
+        await asyncio.sleep(self.update_interval)
+        self.current_update_count += 1
+        if self.current_update_count > self.count_between_screen_updates:
+            self.current_update_count = 0
+            return True
+        else:
+            return False
+
     async def start(self):
         while True:
-            await asyncio.sleep(self.secs_between_screens)
             if not self.screens:
                 continue
-            self.switch_to_next_screen()
-            logger.info(f'show screen {self.current_screen}')
-            logger.info(f'all screens {self.screens}')
-            current_content = list(self.screens.values())[self.current_screen - 1]
-            self.show_content(current_content)
-            del current_content
+            screen_expired = await self.screen_expired()
+            if screen_expired:
+                self.switch_to_next_screen()
+            if self.current_screen != self.last_screen:
+                self.current_update_count = 0
+                logger.info(f'show screen {self.current_screen}')
+                current_content = list(self.screens.values())[self.current_screen - 1]
+                self.show_content(current_content)
+                del current_content
+            self.last_screen = self.current_screen
+            del screen_expired
             gc.collect()
 
     def switch_to_next_screen(self):

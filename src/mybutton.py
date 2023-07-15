@@ -86,8 +86,10 @@ class MyButton:
     def run_event(self, number_of_presses):
         if number_of_presses in self.events.keys():
             func, args, kwargs = self.events[number_of_presses]
+            logger.info(f'press {number_of_presses} triggers {func}')
             func(*args, **kwargs)
-        logger.info(f'No function defined for {number_of_presses} clicks')
+        else:
+            logger.info(f'No function defined for {number_of_presses} clicks')
 
     def add_event(self, number_of_presses, func, args, kwargs):
         self.events[number_of_presses] = (func, args, kwargs)

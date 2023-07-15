@@ -85,22 +85,10 @@ class MyRelay:
         if self.mqtt_enabled:
             # publish MQTT if enabled
             logger.info('Publishing MQTT start message')
-            publish('relay_control_client',
-                    self.mqtt_broker,
-                    '/notification/message',
-                    'relay_control_started',
-                    self.mqtt_username,
-                    self.mqtt_password)
-            logger.info('Completed publishing start message')
+            self.publish_mqtt('status', 'on')
+        if self.button and self.display:
+            self.button.add_event(1, self.display.switch_to_next_screen, [], {})
         await asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
-
-    @property
-    def on(self):
-        return self.state
-
-    @property
-    def state_text(self):
-        return 'on' if self.state is True else 'off'
 
     def switch_state(self, state=None):
         if state is None:
