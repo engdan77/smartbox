@@ -29,17 +29,17 @@ class MyPir:
         else:
             await self.check_motion()
 
-    async def check_motion(self, sleep_time=0.3, bounce_secs=1):
+    async def check_motion(self, sleep_time=0.3, wait_secs=10):
         while True:
             await asyncio.sleep(sleep_time)
             p = Pin(self.pir_pin, Pin.IN)
             if bool(p.value()) is True:
-                self.motion_queue.append(True)
-                logger.info('motion detected')
-                await asyncio.sleep(bounce_secs)
+                self.motion_queue.append(1)
+                logger.info(f'motion detected, waiting {wait_secs} before non motion')
+                await asyncio.sleep(wait_secs)
+                self.motion_queue.append(0)
 
-    @property
-    def motion(self):
+    def read_motion(self):
         try:
             return self.motion_queue.popleft()
         except (ValueError, IndexError):

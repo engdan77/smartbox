@@ -33,7 +33,7 @@ def start_ap(ssid='fan_control'):
 def get_ip():
     if 'esp' in sys.platform:
         network_type = network.STA_IF
-        return network.WLAN(network_type).ifconfig()
+        return network.WLAN(network_type).ifconfig()[0]
     else:
         import socket
         hostname = socket.gethostname()

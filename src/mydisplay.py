@@ -20,7 +20,7 @@ class MyDisplay:
     def __init__(self, sda_pin=4, scl_pin=14, width=128, height=64, secs_between_screens=10):
         i2c = I2C(sda=Pin(sda_pin), scl=Pin(scl_pin))
         self.display = SSD1306_I2C(width, height, i2c)
-        self.screens = {'main': 'Daniels smarta..'}
+        self.screens = {}
         self.current_screen = 0
         self.last_screen = self.current_screen
         self.secs_between_screens = secs_between_screens
@@ -69,6 +69,11 @@ class MyDisplay:
     def show_content(self, text=''):
         self.display.fill(0)
         self.display.show()
-        self.display.text(text, 0, 0, 1)
+        px_between_lines = 12
+        current_row_px = 0
+        for line in text.split('\n'):
+            self.display.text(line, 0, current_row_px, 1)
+            current_row_px += px_between_lines
         self.display.show()
+
 

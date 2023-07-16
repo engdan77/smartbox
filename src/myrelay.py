@@ -12,6 +12,7 @@ else:
 from mymqtt import publish
 from mylogger import Logger
 import gc
+import mywifi
 
 logger = Logger.get_logger()
 
@@ -72,10 +73,10 @@ class MyRelay:
         self.last_override = 0
         self.temp = temp
         self.humid = temp
-        self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0}
-        self.sensor_thresholds = {'temp': 0.5, 'humid': 1, 'smoke': 1}
+        self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0, 'motion': 0}
+        self.sensor_thresholds = {'temp': 0.5, 'humid': 1, 'smoke': 1, 'motion': 0.1}
         if self.display:
-            display.upsert_screen('info', 'info screen')
+            display.upsert_screen('info', f'SmartBox\nIP: {mywifi.get_ip()}')
 
     async def start(self):
         for item in ('temp', 'button', 'motion', 'smoke', 'display'):
@@ -83,11 +84,11 @@ class MyRelay:
             if instance:
                 asyncio.create_task(instance.start())
         if self.mqtt_enabled:
-            # publish MQTT if enabled
             logger.info('Publishing MQTT start message')
             self.publish_mqtt('status', 'on')
         if self.button and self.display:
             self.button.add_event(1, self.display.switch_to_next_screen, [], {})
+            self.button.add_event(2, self.switch_state, [], {})
         await asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
 
     def switch_state(self, state=None):
@@ -95,7 +96,7 @@ class MyRelay:
             self.state = not self.state
         else:
             self.state = state
-        logger.info('changing state to {}'.format(self.state))
+        logger.info(f'changing state to {self.state}')
         self.relay(self.state)
 
     def pause_temp_check(self):
@@ -113,7 +114,7 @@ class MyRelay:
                 if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
             await asyncio.sleep(1)
-            for item in ('temp', 'humid', 'smoke'):
+            for item in ('temp', 'humid', 'smoke', 'motion'):
                 if getattr(self, item):
                     await self.mqtt_sensor_update(item)
             if self.wdt:
