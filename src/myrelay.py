@@ -40,7 +40,7 @@ def randint(start, stop):
 
 class MyRelay:
     def __init__(self,
-                 relay_pin=12,
+                 relay_pin=5,
                  button=None,
                  temp=None,
                  motion=None,
@@ -65,7 +65,7 @@ class MyRelay:
         self.state = False
         self.mqtt_enabled = config.get('mqtt_enabled', False)
         self.mqtt_broker = config.get('mqtt_broker', None)
-        self.mqtt_topic = config.get('mqtt_topic').encode()
+        self.mqtt_topic = config.get('mqtt_topic')
         self.mqtt_username = config.get('mqtt_username', None)
         self.mqtt_password = config.get('mqtt_password', None)
         self.trigger_temp = int(config.get('trigger_temp', 30))
@@ -97,7 +97,7 @@ class MyRelay:
         else:
             self.state = state
         logger.info(f'changing state to {self.state}')
-        self.relay(self.state)
+        self.relay.value(self.state)
 
     def pause_temp_check(self):
         logger.info('update last override')
@@ -128,7 +128,7 @@ class MyRelay:
         if self.mqtt_enabled:
             # publish MQTT if enabled
             logger.info(f'publishing {item}: {data}')
-            publish(b'relay_control_client',
+            publish('smart_box_client',
                     self.mqtt_broker,
                     f'{self.mqtt_topic}/{item}',
                     data,

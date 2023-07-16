@@ -93,7 +93,7 @@ async def start_relay_control(config):
         wdt = WDT(timeout=30)
         temp_obj = MyTemp(pin=PIN_DHT22)
         smoke_obj = MySmoke()
-        motion_obj = MyPir(PIN_PIR)
+        motion_obj = MyPir(PIN_PIR, event_loop=loop)
         button_obj = MyButton(PIN_BUTTON, event_loop=loop)
         display_obj = MyDisplay(sda_pin=PIN_OLED_SDA, scl_pin=PIN_OLED_SCL)
         gc.collect()

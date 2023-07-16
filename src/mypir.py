@@ -35,7 +35,7 @@ class MyPir:
             p = Pin(self.pir_pin, Pin.IN)
             if bool(p.value()) is True:
                 self.motion_queue.append(1)
-                logger.info(f'motion detected, waiting {wait_secs} before non motion')
+                logger.info(f'motion detected, waiting {wait_secs} secs before non motion')
                 await asyncio.sleep(wait_secs)
                 self.motion_queue.append(0)
 
@@ -43,5 +43,5 @@ class MyPir:
         try:
             return self.motion_queue.popleft()
         except (ValueError, IndexError):
-            return False
+            return 0
 
