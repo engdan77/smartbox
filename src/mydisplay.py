@@ -81,14 +81,14 @@ class MyDisplay:
         def get_digit_coords(part='upper'):
             r = {
                 'upper': (0, 0, 20, 5),
-                'middle': (0, 20, 25, 25),
-                'lower': (0, 40, 25, 45),
-                'right_all': (20, 0, 25, 45),
+                'middle': (0, 20, 25, 5),
+                'lower': (0, 40, 25, 5),
+                'right_all': (20, 0, 5, 45),
                 'left_all': (0, 0, 5, 45),
                 'left_upper': (0, 0, 5, 25),
-                'right_lower': (20, 20, 25, 45),
-                'right_upper': (20, 0, 25, 25),
-                'left_lower': (0, 20, 5, 45)
+                'right_lower': (20, 20, 5, 25),
+                'right_upper': (20, 0, 5, 25),
+                'left_lower': (0, 20, 5, 25)
             }
             return list(r[part])
         digit_rects = {'0': ('upper', 'lower', 'left_all', 'right_all'),
@@ -105,10 +105,8 @@ class MyDisplay:
         pieces_with_offsets = []
         for piece in all_pieces:
             coords = get_digit_coords(piece)
-            for i in (0, 2):
-                coords[i] += x_offset
-            for i in (1, 3):
-                coords[i] += y_offset
+            coords[0] += x_offset
+            coords[1] += y_offset
             print(f'coord for {char}: {coords}')
             pieces_with_offsets.append(coords)
         return pieces_with_offsets
