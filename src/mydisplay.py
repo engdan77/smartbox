@@ -19,31 +19,61 @@ logger = Logger.get_logger()
 
 
 def get_digit_coords(part='upper'):
-    r = {
-        'upper': (0, 0, 20, 5),
-        'middle': (0, 20, 25, 5),
-        'lower': (0, 40, 25, 5),
-        'right_all': (20, 0, 5, 45),
-        'left_all': (0, 0, 5, 45),
-        'left_upper': (0, 0, 5, 25),
-        'right_lower': (20, 20, 5, 25),
-        'right_upper': (20, 0, 5, 25),
-        'left_lower': (0, 20, 5, 25)
-    }
-    return list(r[part])
+    if part == 'upper':
+        return (0, 0, 20, 5)
+    if part == 'middle':
+        return (0, 20, 25, 5)
+    if part == 'lower':
+        return (0, 40, 25, 5)
+    if part == 'right_all':
+        return (20, 0, 5, 45)
+    if part == 'left_all':
+        return (0, 0, 5, 45)
+    if part == 'left_upper':
+        return (0, 0, 5, 25)
+    if part == 'right_lower':
+        return (20, 20, 5, 25)
+    if part == 'right_upper':
+        return (20, 0, 5, 25)
+    if part == 'left_lower':
+        return (0, 20, 5, 25)
 
 
 def get_digit_rects(char='0'):
-    return {'0': ('upper', 'lower', 'left_all', 'right_all'),
-            '1': ('left_all',),
-            '2': ('upper', 'right_upper', 'middle', 'left_lower', 'lower'),
-            '3': ('upper', 'middle', 'lower', 'right_all'),
-            '4': ('left_upper', 'middle', 'right_all'),
-            '5': ('upper', 'left_upper', 'middle', 'right_lower', 'lower'),
-            '6': ('upper', 'left_all', 'middle', 'right_lower', 'lower'),
-            '7': ('upper', 'right_all'),
-            '8': ('upper', 'middle', 'lower', 'left_all', 'right_all'),
-            '9': ('upper', 'middle', 'left_upper', 'right_all')}[char]
+    if char == '0':
+        return 'upper lower left_all right_all'
+    if char == '1':
+        return 'left_all'
+    if char == '2':
+        return 'upper right_upper middle left_lower lower'
+    if char == '3':
+        return 'upper middle lower right_all'
+    if char == '4':
+        return 'left_upper middle right_all'
+    if char == '5':
+        return 'upper left_upper middle right_lower lower'
+    if char == '6':
+        return 'upper left_all middle right_lower lower'
+    if char == '7':
+        return 'upper right_all'
+    if char == '8':
+        return 'upper middle lower left_all right_all'
+    if char == '9':
+        return 'upper middle left_upper right_all'
+
+
+def get_char_rectangles(char='0', x_offset=0, y_offset=0):
+        pieces_with_offsets = []
+        all_pieces = get_digit_rects(char).split()  # if a digit
+        for piece in all_pieces:
+            coords = get_digit_coords(piece)
+            coords[0] += x_offset
+            coords[1] += y_offset
+            print(f'coord for {char}: {coords}')
+            pieces_with_offsets.append(coords)
+            del coords
+            gc.collect()
+        return pieces_with_offsets
 
 
 class MyDisplay:
@@ -132,19 +162,6 @@ class MyDisplay:
             gc.collect()
         self.display.show()
 
-    def get_char_rectangles(self, char='0', x_offset=0, y_offset=0):
-            pieces_with_offsets = []
-            all_pieces = get_digit_rects(char)  # if a digit
-            for piece in all_pieces:
-                coords = get_digit_coords(piece)
-                coords[0] += x_offset
-                coords[1] += y_offset
-                print(f'coord for {char}: {coords}')
-                pieces_with_offsets.append(coords)
-                del coords
-                gc.collect()
-            return pieces_with_offsets
-
     def draw_rect(self, coords):
         self.clear_screen()
         start_x, start_y, end_x, end_y = coords
@@ -155,7 +172,7 @@ class MyDisplay:
         self.clear_screen()
         x_offset = 0
         for char in str(chars):
-            for rect in self.get_char_rectangles(char, x_offset, y_offset=0):
+            for rect in get_char_rectangles(char, x_offset, y_offset=0):
                 start_x, start_y, end_x, end_y = rect
                 self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
                 del start_x
