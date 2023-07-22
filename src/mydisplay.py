@@ -1,6 +1,5 @@
 import gc
 import re
-import time
 
 try:
     from machine import Pin, I2C
@@ -119,7 +118,7 @@ class MyDisplay:
         digits = re.sub('[^0-9]', '', content)
         text = re.sub('[0-9]', '', content)
         if digits:
-            # self.show_big_chars(digits)
+            self.show_big_chars(digits)
             del digits
             gc.collect()
         if text:
@@ -133,36 +132,36 @@ class MyDisplay:
             gc.collect()
         self.display.show()
 
-    # def get_char_rectangles(self, char='0', x_offset=0, y_offset=0):
-    #     pieces_with_offsets = []
-    #     all_pieces = get_digit_rects(char)  # if a digit
-    #     for piece in all_pieces:
-    #         coords = get_digit_coords(piece)
-    #         coords[0] += x_offset
-    #         coords[1] += y_offset
-    #         print(f'coord for {char}: {coords}')
-    #         pieces_with_offsets.append(coords)
-    #         del coords
-    #         gc.collect()
-    #     return pieces_with_offsets
-    #
-    # def draw_rect(self, coords):
-    #     self.clear_screen()
-    #     start_x, start_y, end_x, end_y = coords
-    #     self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
-    #     self.display.show()
-    #
-    # def show_big_chars(self, chars, pixels_between_x=32):
-    #     self.clear_screen()
-    #     x_offset = 0
-    #     for char in str(chars):
-    #         for rect in self.get_char_rectangles(char, x_offset, y_offset=0):
-    #             start_x, start_y, end_x, end_y = rect
-    #             self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
-    #             del start_x
-    #             del start_y
-    #             del end_x
-    #             del end_y
-    #             gc.collect()
-    #         x_offset += pixels_between_x
-    #     self.display.show()
+    def get_char_rectangles(self, char='0', x_offset=0, y_offset=0):
+            pieces_with_offsets = []
+            all_pieces = get_digit_rects(char)  # if a digit
+            for piece in all_pieces:
+                coords = get_digit_coords(piece)
+                coords[0] += x_offset
+                coords[1] += y_offset
+                print(f'coord for {char}: {coords}')
+                pieces_with_offsets.append(coords)
+                del coords
+                gc.collect()
+            return pieces_with_offsets
+
+    def draw_rect(self, coords):
+        self.clear_screen()
+        start_x, start_y, end_x, end_y = coords
+        self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
+        self.display.show()
+
+    def show_big_chars(self, chars, pixels_between_x=32):
+        self.clear_screen()
+        x_offset = 0
+        for char in str(chars):
+            for rect in self.get_char_rectangles(char, x_offset, y_offset=0):
+                start_x, start_y, end_x, end_y = rect
+                self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
+                del start_x
+                del start_y
+                del end_x
+                del end_y
+                gc.collect()
+            x_offset += pixels_between_x
+        self.display.show()
