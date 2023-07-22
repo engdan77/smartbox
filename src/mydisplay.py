@@ -1,4 +1,5 @@
 import gc
+import re
 import time
 
 try:
@@ -7,6 +8,7 @@ try:
     import uasyncio as asyncio
 except ModuleNotFoundError:
     from unittest.mock import Mock
+
     I2C = Mock()
     SSD1306_I2C = Mock()
     Pin = Mock()
@@ -15,6 +17,34 @@ except ModuleNotFoundError:
 from mylogger import Logger
 
 logger = Logger.get_logger()
+
+
+def get_digit_coords(part='upper'):
+    r = {
+        'upper': (0, 0, 20, 5),
+        'middle': (0, 20, 25, 5),
+        'lower': (0, 40, 25, 5),
+        'right_all': (20, 0, 5, 45),
+        'left_all': (0, 0, 5, 45),
+        'left_upper': (0, 0, 5, 25),
+        'right_lower': (20, 20, 5, 25),
+        'right_upper': (20, 0, 5, 25),
+        'left_lower': (0, 20, 5, 25)
+    }
+    return list(r[part])
+
+
+def get_digit_rects(char='0'):
+    return {'0': ('upper', 'lower', 'left_all', 'right_all'),
+            '1': ('left_all',),
+            '2': ('upper', 'right_upper', 'middle', 'left_lower', 'lower'),
+            '3': ('upper', 'middle', 'lower', 'right_all'),
+            '4': ('left_upper', 'middle', 'right_all'),
+            '5': ('upper', 'left_upper', 'middle', 'right_lower', 'lower'),
+            '6': ('upper', 'left_all', 'middle', 'right_lower', 'lower'),
+            '7': ('upper', 'right_all'),
+            '8': ('upper', 'middle', 'lower', 'left_all', 'right_all'),
+            '9': ('upper', 'middle', 'left_upper', 'right_all')}[char]
 
 
 class MyDisplay:
@@ -67,78 +97,72 @@ class MyDisplay:
             self.current_screen = 1
         logger.info(f'current screen switched to {self.current_screen}')
 
-    def show_content(self, text=''):
-        self.display.fill(0)
+    def show(self):
         self.display.show()
+
+    def show_text(self, text=''):
         px_between_lines = 12
         current_row_px = 0
         for line in text.split('\n'):
             self.display.text(line, 0, current_row_px, 1)
             current_row_px += px_between_lines
-        self.display.show()
+        del px_between_lines
+        del current_row_px
+        gc.collect()
 
-    def get_char_rectangles(self, char='0', x_offset=0, y_offset=0):
-        def get_digit_coords(part='upper'):
-            r = {
-                'upper': (0, 0, 20, 5),
-                'middle': (0, 20, 25, 5),
-                'lower': (0, 40, 25, 5),
-                'right_all': (20, 0, 5, 45),
-                'left_all': (0, 0, 5, 45),
-                'left_upper': (0, 0, 5, 25),
-                'right_lower': (20, 20, 5, 25),
-                'right_upper': (20, 0, 5, 25),
-                'left_lower': (0, 20, 5, 25)
-            }
-            return list(r[part])
-        digit_rects = {'0': ('upper', 'lower', 'left_all', 'right_all'),
-                       '1': ('left_all',),
-                       '2': ('upper', 'right_upper', 'middle', 'left_lower', 'lower'),
-                       '3': ('upper', 'middle', 'lower', 'right_all'),
-                       '4': ('left_upper', 'middle', 'right_all'),
-                       '5': ('upper', 'left_upper', 'middle', 'right_lower', 'lower'),
-                       '6': ('upper', 'left_all', 'middle', 'right_lower', 'lower'),
-                       '7': ('upper', 'right_all'),
-                       '8': ('upper', 'middle', 'lower', 'left_all', 'right_all'),
-                       '9': ('upper', 'middle', 'left_upper', 'right_all')}
-        all_pieces = digit_rects[char]
-        pieces_with_offsets = []
-        for piece in all_pieces:
-            coords = get_digit_coords(piece)
-            coords[0] += x_offset
-            coords[1] += y_offset
-            print(f'coord for {char}: {coords}')
-            pieces_with_offsets.append(coords)
-        return pieces_with_offsets
-
-    def draw_rect(self, coords):
+    def clear_screen(self):
         self.display.fill(0)
         self.display.show()
-        start_x, start_y, end_x, end_y = coords
-        self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
+
+    def show_content(self, content=''):
+        self.clear_screen()
+        digits = re.sub('[^0-9]', '', content)
+        text = re.sub('[0-9]', '', content)
+        if digits:
+            # self.show_big_chars(digits)
+            del digits
+            gc.collect()
+        if text:
+            px_between_lines = 12
+            current_row_px = 0
+            for line in content.split('\n'):
+                self.display.text(line, 0, current_row_px, 1)
+                current_row_px += px_between_lines
+            del px_between_lines
+            del current_row_px
+            gc.collect()
         self.display.show()
 
-    def draw_rects(self, coords):
-        self.display.fill(0)
-        self.display.show()
-        x_offset = 0
-        y_offset = 0
-        for rect in coords:
-            start_x, start_y, end_x, end_y = rect
-            self.display.fill_rect(start_x + x_offset, start_y + y_offset, end_x + x_offset - start_x,
-                                   end_y + y_offset - start_y, 1)
-            time.sleep(0.5)
-        self.display.show()
-
-    def draw_chars(self, chars, pixels_between_x=32):
-        self.display.fill(0)
-        self.display.show()
-        x_offset = 0
-        y_offset = 0
-        for char in str(chars):
-            for rect in self.get_char_rectangles(char, x_offset, y_offset):
-                start_x, start_y, end_x, end_y = rect
-                self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
-            x_offset += pixels_between_x
-        self.display.show()
-
+    # def get_char_rectangles(self, char='0', x_offset=0, y_offset=0):
+    #     pieces_with_offsets = []
+    #     all_pieces = get_digit_rects(char)  # if a digit
+    #     for piece in all_pieces:
+    #         coords = get_digit_coords(piece)
+    #         coords[0] += x_offset
+    #         coords[1] += y_offset
+    #         print(f'coord for {char}: {coords}')
+    #         pieces_with_offsets.append(coords)
+    #         del coords
+    #         gc.collect()
+    #     return pieces_with_offsets
+    #
+    # def draw_rect(self, coords):
+    #     self.clear_screen()
+    #     start_x, start_y, end_x, end_y = coords
+    #     self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
+    #     self.display.show()
+    #
+    # def show_big_chars(self, chars, pixels_between_x=32):
+    #     self.clear_screen()
+    #     x_offset = 0
+    #     for char in str(chars):
+    #         for rect in self.get_char_rectangles(char, x_offset, y_offset=0):
+    #             start_x, start_y, end_x, end_y = rect
+    #             self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
+    #             del start_x
+    #             del start_y
+    #             del end_x
+    #             del end_y
+    #             gc.collect()
+    #         x_offset += pixels_between_x
+    #     self.display.show()

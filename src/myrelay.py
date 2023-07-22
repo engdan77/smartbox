@@ -143,3 +143,5 @@ class MyRelay:
             self.publish_mqtt(item, current_value)
             if self.display:
                 self.display.upsert_screen(item, f'{item}: {current_value}')
+        del current_value
+        gc.collect()
