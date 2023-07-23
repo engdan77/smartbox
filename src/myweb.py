@@ -3,11 +3,14 @@ try:
 except ImportError:
     import asyncio
 
-from mylogger import Logger
 import sys
+from mylogger import Logger
+
+logger = Logger.get_logger()
 
 
 def socket_write(writer, data, content_type='text/html'):
+    logger.info(f'HTTP sending {data}')
     headers = f'HTTP/1.0 200 OK\r\nContent-type: {content_type}\r\nContent-Length: {len(data)}\r\n\r\n'
     data = headers + data
     if 'esp' not in sys.platform:
@@ -18,18 +21,15 @@ def socket_write(writer, data, content_type='text/html'):
 async def serve_client(reader, writer):
     logger.info("Client connected")
     request_line = await reader.readline()
-    logger.info("Request:", request_line)
+    logger.info(f"HTTP REQUEST: {request_line}")
     # We are not interested in HTTP request headers, skip them
     while await reader.readline() != b"\r\n":
         pass
 
     request = str(request_line)
 
-    if 'logs' in request:
-        logger = Logger.get_logger()
-        logger.info('Showing logs')
-        logs = '<br/>'.join([_ for _ in logger.get_last_records()])
-        response = f'Logs:<br/>{logs}'
+    if 'json' in request:
+        response = 'JSON'
         socket_write(writer, response)
     else:
         response = 'No valid command'

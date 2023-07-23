@@ -38,7 +38,7 @@ def randint(start, stop):
     return randrange(start, stop + 1)
 
 
-class MyRelay:
+class MyController:
     def __init__(self,
                  relay_pin=5,
                  button=None,

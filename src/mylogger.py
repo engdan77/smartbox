@@ -11,7 +11,7 @@ class Logger:
     def info(cls, x):
         print(x)
 
-
+# DUE TO HIGH MEMORY UTILIZATION ON ESP8266 DISABLED
 # class Logger:
 #     _logger = None
 #     _init_time = None
