@@ -7,7 +7,6 @@ __email__ = "daniel@engvalls.eu"
 import sys
 
 from mymem import get_mem
-from mysmoke import MySmoke
 
 try:
     import machine
@@ -30,6 +29,7 @@ else:
     import webrepl
 
 import gc
+import time
 import myconfig
 from myweb import start_simple_web
 from mywifi import get_ip
@@ -42,12 +42,11 @@ from mytemp import MyTemp
 from mydisplay import MyDisplay
 from mywatchdog import WDT
 from mywifi import start_ap
-from mylogger import Logger
 
 DEBUG = False
 
+from mylogger import Logger
 logger = Logger.get_logger()
-
 
 
 WEBREPL_PASSWORD = 'relay'
@@ -72,7 +71,8 @@ PIN_DHT22 = 16
 def async_exception_handler(loop, context):
     logger.info(f'async exception handler: {context}')
     if 'esp' in sys.platform:
-        print('async exception handler restarting')
+        print('async exception handler restarting, wait 5 sec')
+        time.sleep(5)
         machine.reset()
 
 
@@ -132,9 +132,12 @@ def start():
         webrepl.start_foreground()
     else:
         config = myconfig.get_config(input_default_config=c)
-        asyncio.run(start_relay_control(config))
         del c
         gc.collect()
+        asyncio.run(start_relay_control(config))
+        del config
+        gc.collect()
+
 
 
 if __name__ == '__main__':

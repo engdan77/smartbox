@@ -20,30 +20,32 @@ logger = Logger.get_logger()
 
 def get_digit_coords(part='upper'):
     if part == 'upper':
-        return (0, 0, 20, 5)
+        return [0, 0, 20, 5]
     if part == 'middle':
-        return (0, 20, 25, 5)
+        return [0, 20, 25, 5]
     if part == 'lower':
-        return (0, 40, 25, 5)
+        return [0, 40, 25, 5]
     if part == 'right_all':
-        return (20, 0, 5, 45)
+        return [20, 0, 5, 45]
     if part == 'left_all':
-        return (0, 0, 5, 45)
+        return [0, 0, 5, 45]
     if part == 'left_upper':
-        return (0, 0, 5, 25)
+        return [0, 0, 5, 25]
     if part == 'right_lower':
-        return (20, 20, 5, 25)
+        return [20, 20, 5, 25]
     if part == 'right_upper':
-        return (20, 0, 5, 25)
+        return [20, 0, 5, 25]
     if part == 'left_lower':
-        return (0, 20, 5, 25)
+        return [0, 20, 5, 25]
+    if part == 'dot':
+        return [0, 40, 5, 5]
 
 
 def get_digit_rects(char='0'):
     if char == '0':
         return 'upper lower left_all right_all'
     if char == '1':
-        return 'left_all'
+        return 'right_all'
     if char == '2':
         return 'upper right_upper middle left_lower lower'
     if char == '3':
@@ -60,6 +62,8 @@ def get_digit_rects(char='0'):
         return 'upper middle lower left_all right_all'
     if char == '9':
         return 'upper middle left_upper right_all'
+    if char == '.':
+        return 'dot'
 
 
 def get_char_rectangles(char='0', x_offset=0, y_offset=0):
@@ -145,9 +149,9 @@ class MyDisplay:
 
     def show_content(self, content=''):
         self.clear_screen()
-        digits = re.sub('[^0-9]', '', content)
+        digits = re.sub('[^0-9.]', '', content)
         text = re.sub('[0-9]', '', content)
-        if digits:
+        if digits and not len(digits) > 4:
             self.show_big_chars(digits)
             del digits
             gc.collect()
@@ -172,7 +176,7 @@ class MyDisplay:
         self.clear_screen()
         x_offset = 0
         for char in str(chars):
-            for rect in get_char_rectangles(char, x_offset, y_offset=0):
+            for rect in get_char_rectangles(char, x_offset, y_offset=15):
                 start_x, start_y, end_x, end_y = rect
                 self.display.fill_rect(start_x, start_y, end_x, end_y, 1)
                 del start_x

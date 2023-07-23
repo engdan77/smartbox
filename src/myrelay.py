@@ -76,7 +76,7 @@ class MyRelay:
         self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0, 'motion': 0}
         self.sensor_thresholds = {'temp': 0.5, 'humid': 1, 'smoke': 1, 'motion': 0.1}
         if self.display:
-            display.upsert_screen('info', f'SmartBox\nIP: {mywifi.get_ip()}')
+            display.upsert_screen('info', f'Daniels\nSmartBox\nIP: {mywifi.get_ip()}')
 
     async def start(self):
         for item in ('temp', 'button', 'motion', 'smoke', 'display'):
@@ -85,6 +85,7 @@ class MyRelay:
                 asyncio.create_task(instance.start())
         if self.mqtt_enabled:
             logger.info('Publishing MQTT start message')
+            print(f'mem_free: {gc.mem_free()}')
             self.publish_mqtt('status', 'on')
         if self.button and self.display:
             self.button.add_event(1, self.display.switch_to_next_screen, [], {})
@@ -122,7 +123,8 @@ class MyRelay:
                     logger.info('Calm watchdog down, all okay')
                 self.wdt.feed()
             gc.collect()
-            logger.info(f'mem_free: {gc.mem_free()}')
+            print(f'mem_free: {gc.mem_free()}')
+            gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
 
     def publish_mqtt(self, item, data):
         if self.mqtt_enabled:
