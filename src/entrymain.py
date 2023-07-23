@@ -48,6 +48,8 @@ DEBUG = False
 from mylogger import Logger
 logger = Logger.get_logger()
 
+app_objects = {}
+
 
 WEBREPL_PASSWORD = 'relay'
 CONFIG = {'essid': 'MYWIFI',
@@ -86,8 +88,7 @@ async def wait_forever():
         await asyncio.sleep(3)
 
 
-async def start_relay_control(config):
-
+async def start_controller(config):
     try:
         loop = asyncio.get_event_loop()
         wdt = WDT(timeout=30)
@@ -98,8 +99,10 @@ async def start_relay_control(config):
         display_obj = MyDisplay(sda_pin=PIN_OLED_SDA, scl_pin=PIN_OLED_SCL)
         gc.collect()
         loop.set_exception_handler(async_exception_handler)
-        relay_task = MyController(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG, event_loop=loop, sleep_interval=2000)
-        r = asyncio.create_task(relay_task.start())
+        controller_object = MyController(button=button_obj, temp=temp_obj, motion=motion_obj, smoke=smoke_obj, display=display_obj, config=config, wdt=wdt, debug=DEBUG, event_loop=loop, sleep_interval=2000)
+        global app_objects
+        app_objects['controller'] = controller_object
+        r = asyncio.create_task(controller_object.start())
         start_simple_web()
         try:
             await r
@@ -134,7 +137,7 @@ def start():
         config = myconfig.get_config(input_default_config=c)
         del c
         gc.collect()
-        asyncio.run(start_relay_control(config))
+        asyncio.run(start_controller(config))
         del config
         gc.collect()
 

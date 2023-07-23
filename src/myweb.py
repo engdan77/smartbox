@@ -4,6 +4,7 @@ except ImportError:
     import asyncio
 
 import sys
+import entrymain
 from mylogger import Logger
 
 logger = Logger.get_logger()
@@ -29,7 +30,8 @@ async def serve_client(reader, writer):
     request = str(request_line)
 
     if 'json' in request:
-        response = 'JSON'
+        m = entrymain.app_objects
+        response = f'JSON {m}'
         socket_write(writer, response)
     else:
         response = 'No valid command'
@@ -41,7 +43,7 @@ async def serve_client(reader, writer):
 
 
 def start_simple_web(start_loop=False):
-    asyncio.create_task(asyncio.start_server(serve_client, "0.0.0.0", 5050))
+    asyncio.create_task(asyncio.start_server(serve_client, "0.0.0.0", 80))
     if start_loop:
         loop = asyncio.get_event_loop()
         loop.run_forever()
