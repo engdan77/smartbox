@@ -29,12 +29,16 @@ async def serve_client(reader, writer):
 
     request = str(request_line)
 
+    o = entrymain.app_objects["controller"]
     if 'json' in request:
-        m = entrymain.app_objects
-        response = f'JSON {m}'
-        socket_write(writer, response)
+        response = f'{{"temp": {o.temp.read_temp()}, "humidity": {o.temp.read_humid()}, "smoke": {o.smoke.read_smoke()}, "motion": {o.motion.read_motion()}}}'
+        socket_write(writer, response, 'application/json')
     else:
-        response = 'No valid command'
+        response = f'''<p><span style="font-size:16px"><strong>Daniels smarta box</strong></span></p>
+<p>Temperatur: {o.temp.read_temp()} &deg;C<br />
+Fuktighet: {o.temp.read_humid()} %<br />
+R&ouml;k: {o.smoke.read_smoke()} %<br />
+R&ouml;relse: {o.motion.read_motion()}</p>'''
         socket_write(writer, response)
 
     await writer.drain()

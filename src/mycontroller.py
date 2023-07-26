@@ -139,7 +139,7 @@ class MyController:
 
     async def mqtt_sensor_update(self, item):
         current_value = getattr(getattr(self, item), f'read_{item}')()
-        logger.info(f'current value {current_value}')
+        logger.info(f'{item}: {current_value}')
         if abs(current_value - self.last_major_reading[item]) >= self.sensor_thresholds[item]:
             self.last_major_reading[item] = current_value
             self.publish_mqtt(item, current_value)
