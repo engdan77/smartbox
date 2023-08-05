@@ -31,7 +31,7 @@ else:
 import gc
 import time
 import myconfig
-from myweb import start_simple_web
+from mywebng import start_simple_web
 from mywifi import get_ip
 
 from mybutton import MyButton
@@ -91,7 +91,7 @@ async def wait_forever():
 async def start_controller(config):
     try:
         loop = asyncio.get_event_loop()
-        wdt = WDT(timeout=30)
+        wdt = WDT(timeout=60)
         temp_obj = MyTemp(pin=PIN_DHT22)
         smoke_obj = MySmoke()
         motion_obj = MyPir(PIN_PIR, event_loop=loop)
@@ -140,7 +140,6 @@ def start():
         asyncio.run(start_controller(config))
         del config
         gc.collect()
-
 
 
 if __name__ == '__main__':

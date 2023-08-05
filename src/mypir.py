@@ -20,8 +20,8 @@ logger= Logger.get_logger()
 class MyPir:
     def __init__(self, button_pin=14, event_loop=None):
         self.event_loop = event_loop
-        self.motion_queue = deque((), 10)
         self.pir_pin = button_pin
+        self.motion_active = False
 
     async def start(self):
         if self.event_loop:
@@ -29,19 +29,16 @@ class MyPir:
         else:
             await self.check_motion()
 
-    async def check_motion(self, sleep_time=0.3, wait_secs=10):
+    async def check_motion(self, sleep_time=0.3, wait_secs=30):
         while True:
             await asyncio.sleep(sleep_time)
             p = Pin(self.pir_pin, Pin.IN)
             if bool(p.value()) is True:
-                self.motion_queue.append(1)
+                self.motion_active = 1
                 logger.info(f'motion detected, waiting {wait_secs} secs before non motion')
                 await asyncio.sleep(wait_secs)
-                self.motion_queue.append(0)
+                self.motion_active = 0
 
     def read_motion(self):
-        try:
-            return self.motion_queue.popleft()
-        except (ValueError, IndexError):
-            return 0
+        return self.motion_active
 

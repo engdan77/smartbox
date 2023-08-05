@@ -90,6 +90,8 @@ class MyController:
         if self.button and self.display:
             self.button.add_event(1, self.display.switch_to_next_screen, [], {})
             self.button.add_event(2, self.switch_state, [], {})
+        if self.motion.read_motion():
+            self.display.reset_screen_saver()
         await asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
 
     def switch_state(self, state=None):

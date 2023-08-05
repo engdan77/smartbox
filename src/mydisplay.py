@@ -92,12 +92,13 @@ class MyDisplay:
         self.update_interval = 0.5
         self.count_between_screen_updates = self.secs_between_screens / self.update_interval
         self.current_update_count = 0
+        self.screen_save_count = 120
+        self.remaining_count_before_screen_save = 120
 
     def upsert_screen(self, title, content):
         self.screens[title] = content
 
     async def screen_expired(self):
-        await asyncio.sleep(self.update_interval)
         self.current_update_count += 1
         if self.current_update_count > self.count_between_screen_updates:
             self.current_update_count = 0
@@ -105,10 +106,26 @@ class MyDisplay:
         else:
             return False
 
+    def screen_saver_count_update(self):
+        if self.remaining_count_before_screen_save == 0:
+            self.clear_screen()
+        if self.remaining_count_before_screen_save > 0:
+            self.remaining_count_before_screen_save -= 1
+
+    def is_screen_saver_active(self):
+        return bool(self.remaining_count_before_screen_save)
+
+    def reset_screen_saver(self):
+        self.remaining_count_before_screen_save = self.screen_save_count
+
     async def start(self):
         while True:
+            await asyncio.sleep(self.update_interval)
             if not self.screens:
                 continue
+            if self.is_screen_saver_active():
+                continue
+            self.screen_saver_count_update()
             screen_expired = await self.screen_expired()
             if screen_expired:
                 self.switch_to_next_screen()
@@ -122,7 +139,8 @@ class MyDisplay:
             del screen_expired
             gc.collect()
 
-    def switch_to_next_screen(self):
+    def switch_to_next_screen_reset_counter(self):
+        self.reset_screen_saver()
         if not self.screens:
             return
         self.current_screen += 1

@@ -4,7 +4,7 @@ except ImportError:
     import asyncio
 
 import sys
-import entrymain
+import entrymainng
 from mylogger import Logger
 
 logger = Logger.get_logger()
@@ -29,7 +29,7 @@ async def serve_client(reader, writer):
 
     request = str(request_line)
 
-    o = entrymain.app_objects["controller"]
+    o = entrymainng.app_objects["controller"]
     if 'json' in request:
         response = f'{{"temp": {o.temp.read_temp()}, "humidity": {o.temp.read_humid()}, "smoke": {o.smoke.read_smoke()}, "motion": {o.motion.read_motion()}}}'
         socket_write(writer, response, 'application/json')
