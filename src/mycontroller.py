@@ -88,8 +88,9 @@ class MyController:
             print(f'mem_free: {gc.mem_free()}')
             self.publish_mqtt('status', 'on')
         if self.button and self.display:
-            self.button.add_event(1, self.display.switch_to_next_screen, [], {})
+            self.button.add_event(1, self.display.switch_to_next_screen_and_reset_screen_saver, [], {})
             self.button.add_event(2, self.switch_state, [], {})
+            self.button.add_event(3, mywifi.stop_wifi_start_webrepl, [], {})
         if self.motion.read_motion():
             self.display.reset_screen_saver()
         await asyncio.create_task(self.check_changes(sleep_time=self.sleep_interval))
@@ -117,6 +118,9 @@ class MyController:
                 if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
             await asyncio.sleep(1)
+            if self.motion.read_motion():
+                logger.info('Motion detected, reset screen saver')
+                self.display.reset_screen_saver()
             for item in ('temp', 'humid', 'smoke', 'motion'):
                 if getattr(self, item):
                     await self.mqtt_sensor_update(item)

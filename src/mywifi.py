@@ -20,7 +20,7 @@ def stop_all_wifi():
     ap.active(False)
 
 
-def start_ap(ssid='fan_control'):
+def start_ap(ssid='smartbox_control'):
     ap = network.WLAN(network.AP_IF)
     time.sleep(1)
     ap.active(True)
@@ -28,6 +28,23 @@ def start_ap(ssid='fan_control'):
     logger.info('AP mode started')
     logger.info(ap.ifconfig())
     time.sleep(1)
+
+
+def start_webrepl(password='smartbox'):
+    logger.info('Staring webrepl')
+    import webrepl
+    webrepl.start(password='snabel')
+
+
+def stop_wifi_start_webrepl():
+    import entrymain
+    o = entrymain.app_objects["controller"]
+    o.display.stop()
+    o.display.clear_screen()
+    o.display.show_text('WEBREPL\nSTARTED')
+    stop_all_wifi()
+    start_ap()
+    start_webrepl()
 
 
 def get_ip():

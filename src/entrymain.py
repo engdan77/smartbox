@@ -31,7 +31,7 @@ else:
 import gc
 import time
 import myconfig
-from mywebng import start_simple_web
+from myweb import start_simple_web
 from mywifi import get_ip
 
 from mybutton import MyButton

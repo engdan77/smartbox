@@ -4,7 +4,7 @@ except ImportError:
     import asyncio
 
 import sys
-import entrymainng
+import entrymain
 from mylogger import Logger
 
 logger = Logger.get_logger()
@@ -29,18 +29,25 @@ async def serve_client(reader, writer):
 
     request = str(request_line)
 
-    o = entrymainng.app_objects["controller"]
+    o = entrymain.app_objects["controller"]
     if 'json' in request:
-        response = f'{{"temp": {o.temp.read_temp()}, "humidity": {o.temp.read_humid()}, "smoke": {o.smoke.read_smoke()}, "motion": {o.motion.read_motion()}}}'
+        response = f'{{"temp": {o.temp.read_temp()}, "humidity": {o.temp.read_humid()}, "smoke": {o.smoke.read_smoke()}, "relay": {o.relay.value()}, "motion": {o.motion.read_motion()}}}'
         socket_write(writer, response, 'application/json')
+    elif 'relay' in request and 'on' in request:
+        o.relay.value(1)
+        socket_write(writer, f'{{"relay": {o.relay.value()}}}', 'application/json')
+    elif 'relay' in request and 'off' in request:
+        o.relay.value(0)
+        socket_write(writer, f'{{"relay": {o.relay.value()}}}', 'application/json')
     else:
         response = f'''<p><span style="font-size:16px"><strong>Daniels smarta box</strong></span></p>
 <p>Temperatur: {o.temp.read_temp()} &deg;C<br />
 Fuktighet: {o.temp.read_humid()} %<br />
 R&ouml;k: {o.smoke.read_smoke()} %<br />
-R&ouml;relse: {o.motion.read_motion()}</p>'''
+R&ouml;relse: {o.motion.read_motion()}<br />
+Rel&auml;: {o.relay.value()}
+</p>'''
         socket_write(writer, response)
-
     await writer.drain()
     await writer.wait_closed()
     logger.info("Client disconnected")

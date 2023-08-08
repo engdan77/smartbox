@@ -94,6 +94,7 @@ class MyDisplay:
         self.current_update_count = 0
         self.screen_save_count = 120
         self.remaining_count_before_screen_save = 120
+        self.display_started = False
 
     def upsert_screen(self, title, content):
         self.screens[title] = content
@@ -107,23 +108,32 @@ class MyDisplay:
             return False
 
     def screen_saver_count_update(self):
+        self.remaining_count_before_screen_save -= 1
+        logger.info(f'Current counter for screen saver {self.remaining_count_before_screen_save}')
         if self.remaining_count_before_screen_save == 0:
             self.clear_screen()
-        if self.remaining_count_before_screen_save > 0:
-            self.remaining_count_before_screen_save -= 1
 
     def is_screen_saver_active(self):
         return bool(self.remaining_count_before_screen_save)
 
     def reset_screen_saver(self):
+        logger.info('Reset screen saver counter')
         self.remaining_count_before_screen_save = self.screen_save_count
 
+    def stop(self):
+        self.display_started = False
+
     async def start(self):
+        logger.info('Starting display loop')
+        self.display_started = True
         while True:
+            if not self.display_started:
+                logger.info('Stopping display')
+                break
             await asyncio.sleep(self.update_interval)
             if not self.screens:
                 continue
-            if self.is_screen_saver_active():
+            if not self.is_screen_saver_active():
                 continue
             self.screen_saver_count_update()
             screen_expired = await self.screen_expired()
@@ -139,8 +149,11 @@ class MyDisplay:
             del screen_expired
             gc.collect()
 
-    def switch_to_next_screen_reset_counter(self):
+    def switch_to_next_screen_and_reset_screen_saver(self):
         self.reset_screen_saver()
+        self.switch_to_next_screen()
+
+    def switch_to_next_screen(self):
         if not self.screens:
             return
         self.current_screen += 1
@@ -162,6 +175,7 @@ class MyDisplay:
         gc.collect()
 
     def clear_screen(self):
+        logger.info('Clearing screen')
         self.display.fill(0)
         self.display.show()
 
