@@ -109,7 +109,7 @@ class MyDisplay:
 
     def screen_saver_count_update(self):
         self.remaining_count_before_screen_save -= 1
-        logger.info(f'Current counter for screen saver {self.remaining_count_before_screen_save}')
+        # logger.info(f'Current counter for screen saver {self.remaining_count_before_screen_save}')
         if self.remaining_count_before_screen_save == 0:
             self.clear_screen()
 

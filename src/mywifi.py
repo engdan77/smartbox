@@ -40,8 +40,11 @@ def stop_wifi_start_webrepl():
     import entrymain
     o = entrymain.app_objects["controller"]
     o.display.stop()
+    time.sleep(3)
     o.display.clear_screen()
     o.display.show_text('WEBREPL\nSTARTED')
+    o.display.show()
+    time.sleep(3)
     stop_all_wifi()
     start_ap()
     start_webrepl()
