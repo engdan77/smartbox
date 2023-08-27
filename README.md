@@ -8,6 +8,14 @@ Including a button, to allow switch between sensors and control the relay.. so t
 
 I forgot once again the limitations such memory in ESP8266 (just around 35KB ram) that turned out to be a problem involving that much code to be run in such way that the interpreter required to compile within RAM so eventually freezing this assured leaving around 20KB when code being run .. ruins the workflow a little bit with the inconvinience with using the cross-compiler and flash the firmware... but again, it is quite impressive what one are able to squeeze into there tiny inexpensive things.. I made some notes how I did freeze the code and flashed this using my environment together with some internal tips and tricks mainly for my own memory.
 
+## Pictures of project
+
+<img src="/Users/edo/git/my/iot_smart_relay/docs/esp8266_relay.png" alt="esp8266_relay" style="zoom:20%;" /><img src="/Users/edo/git/my/iot_smart_relay/docs/box_image.png" alt="box_image" style="zoom:20%;" />
+
+<img src="/Users/edo/git/my/iot_smart_relay/docs/lid_image.png" alt="lid_image" style="zoom:18%;" /><img src="/Users/edo/git/my/iot_smart_relay/docs/relay_inside.png" alt="relay_inside" style="zoom:16%;" />
+
+<img src="/Users/edo/git/my/iot_smart_relay/docs/smartbox_essemble.png" alt="smartbox_essemble" style="zoom:20%;" /><a href="https://youtu.be/uAbRgx42DTE"><img src="/Users/edo/git/my/iot_smart_relay/docs/final_smartbox_image.png" alt="final_smartbox_image" style="zoom:28%;" /></a>
+
 
 
 ## Hardware and wiring
@@ -42,6 +50,57 @@ Also while flashing the board IO0 had to be put to GROUND which I at first faile
 ### ADC (smoke detection)
 
 For the MQ2 sensor to driven by 5v but ESP8266 expect 3.3v I had to use a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider) of 1000 ohm and 220 ohm that turned out well.
+
+## Class diagram
+
+```mermaid
+classDiagram
+
+entrypoint ..> MyController : uses
+entrypoint ..> webrepl : uses
+entrypoint ..> wifi : uses
+
+MyController o-- MyButton : Aggregation
+MyController o-- WDT : Aggregation
+MyController o-- MySmoke : Aggregation
+MyController o-- MyPir : Aggregation
+MyController o-- MyDisplay : Aggregation
+
+MyButton ..> MyDisplay
+
+MQTTClient <.. MySmoke
+MQTTClient <.. MyPir
+MQTTClient <.. MyTemp
+
+class MyTemp {
+pin: int
+read_temp()
+read_humd()
+}
+
+class MyButton { 
+pin: int
+event_loop: obj
++add_event() }
+
+class WDT { timeout: str }
+
+class MySmoke {
+pin: int
+read_smoke()
+}
+
+class MyPir {
+pin: int
+event_loop: obj
+read_motion()
+}
+
+class MyDisplay {
+sda_pin: int
+scl_pin: int
+}
+```
 
 
 
