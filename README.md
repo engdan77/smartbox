@@ -10,11 +10,11 @@ I forgot once again the limitations such memory in ESP8266 (just around 35KB ram
 
 ## Pictures of project
 
-<img src="/Users/edo/git/my/iot_smart_relay/docs/esp8266_relay.png" alt="esp8266_relay" style="zoom:20%;" /><img src="/Users/edo/git/my/iot_smart_relay/docs/box_image.png" alt="box_image" style="zoom:20%;" />
+<img src="https://raw.githubusercontent.com/engdan77/project_images/master/pics/esp8266_relay.png" alt="esp8266_relay" style="zoom:20%;" /><img src="https://raw.githubusercontent.com/engdan77/project_images/master/pics/box_image.png" alt="box_image" style="zoom:20%;" />
 
-<img src="/Users/edo/git/my/iot_smart_relay/docs/lid_image.png" alt="lid_image" style="zoom:18%;" /><img src="/Users/edo/git/my/iot_smart_relay/docs/relay_inside.png" alt="relay_inside" style="zoom:16%;" />
+<img src="https://raw.githubusercontent.com/engdan77/project_images/master/pics/lid_image.png" alt="lid_image" style="zoom:18%;" /><img src="https://raw.githubusercontent.com/engdan77/project_images/master/pics/relay_inside.png" alt="relay_inside" style="zoom:16%;" />
 
-<img src="/Users/edo/git/my/iot_smart_relay/docs/smartbox_essemble.png" alt="smartbox_essemble" style="zoom:20%;" /><a href="https://youtu.be/uAbRgx42DTE"><img src="/Users/edo/git/my/iot_smart_relay/docs/final_smartbox_image.png" alt="final_smartbox_image" style="zoom:28%;" /></a>
+<img src="https://raw.githubusercontent.com/engdan77/project_images/master/pics/smartbox_essemble.png" alt="smartbox_essemble" style="zoom:20%;" /><a href="https://youtu.be/uAbRgx42DTE"><img src="https://raw.githubusercontent.com/engdan77/project_images/master/pics/final_smartbox_image.png" alt="final_smartbox_image" style="zoom:28%;" /></a>
 
 
 
