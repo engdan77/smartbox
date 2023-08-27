@@ -1,5 +1,9 @@
 # Smart relay box
 
+[TOC]
+
+
+
 ## Thoughts around this project
 
 Found good need for monitoring of motions.. 🚨..  temperature/humidity 🌡 and smoke 🔥 in case of fire within out shed, so thank to an ESP8266 relay board such as [this](https://www.aliexpress.com/item/4001145890926.html?spm=a2g0o.productlist.main.1.1b986f01joMaxY&algo_pvid=4035ccb3-9bda-4bdf-95bb-2230b130ac4a&algo_exp_id=4035ccb3-9bda-4bdf-95bb-2230b130ac4a-0&pdp_npi=4%40dis%21SEK%21104.43%2173.05%21%21%219.55%21%21%40211b88f016913406953693746e60b8%2110000014889605063%21sea%21SE%21172124112%21&curPageLogUid=IiB248JTDrD1#nav-description) one allowed me write some Micropython code to allow display this to an OLED display and at the same time allow send data back to MQTT used by home automation .. and a small web-service allowing one to read sensor values as HTML or JSON.
@@ -33,7 +37,7 @@ Figuring out those PIN's were not that obvious since not all GPIO's are suitable
 
 Also while flashing the board IO0 had to be put to GROUND which I at first failed by figuring out that the pin soldered to the GND I used was not properly soldered that caused me some trouble before understanding that was the issue.
 
-### Pins
+### Hardware GPIO pins connections
 
 | Relay board GPIO | Comment                   | Component Pin |
 | ---------------- | ------------------------- | ------------- |
@@ -52,6 +56,8 @@ Also while flashing the board IO0 had to be put to GROUND which I at first faile
 For the MQ2 sensor to driven by 5v but ESP8266 expect 3.3v I had to use a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider) of 1000 ohm and 220 ohm that turned out well.
 
 ## Class diagram
+
+This is an overview of the relationship between classes written in the Micropython source code.
 
 ```mermaid
 classDiagram
