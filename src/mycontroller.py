@@ -77,7 +77,7 @@ class MyController:
         self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0, 'motion': 0}
         self.sensor_thresholds = {'temp': 0.5, 'humid': 1, 'smoke': 7, 'motion': 0.1}
         if self.display:
-            display.upsert_screen('info', f'Daniels\nSmartBox\nIP: {mywifi.get_ip()}')
+            display.upsert_screen('info', f'Daniels\nSmartBox v2\nIP: {mywifi.get_ip()}')
 
     async def start(self):
         for item in ('temp', 'button', 'motion', 'smoke', 'display'):
