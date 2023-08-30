@@ -71,6 +71,7 @@ class MyController:
         self.trigger_temp = int(config.get('trigger_temp', 30))
         self.override_secs = int(config.get('override_secs', 60))
         self.last_override = 0
+        self.force_update_counter = 0
         self.temp = temp
         self.humid = temp
         self.last_major_reading = {'temp': 0, 'humid': 0, 'smoke': 0, 'motion': 0}
@@ -111,19 +112,26 @@ class MyController:
     def in_pause_mode(self):
         return self.last_override > 0 and time.time() <= self.last_override + self.override_secs
 
-    async def check_changes(self, sleep_time=0.5, button_time_secs=1):
+    async def check_changes(self, sleep_time=1, force_update_threshold=3600):
         while True:
             if self.debug:
                 logger.info('Polling..')
                 if randint(0, 20) >= 19:
                     raise RuntimeError('provoked error')
-            await asyncio.sleep(1)
+            await asyncio.sleep(sleep_time)
             if self.motion.read_motion():
                 logger.info('Motion detected, reset screen saver')
                 self.display.reset_screen_saver()
             for item in ('temp', 'humid', 'smoke', 'motion'):
                 if getattr(self, item):
                     await self.mqtt_sensor_update(item)
+                    if self.force_update_counter >= force_update_threshold:
+                        logger.info('Force updating sensor')
+                        await self.mqtt_sensor_update(item, force_update=True)
+            if self.force_update_counter >= force_update_threshold:
+                self.force_update_counter = 0
+            else:
+                self.force_update_counter += 1
             if self.wdt:
                 if self.debug:
                     logger.info('Calm watchdog down, all okay')
@@ -143,10 +151,10 @@ class MyController:
                     self.mqtt_username,
                     self.mqtt_password)
 
-    async def mqtt_sensor_update(self, item):
+    async def mqtt_sensor_update(self, item, force_update=False):
         current_value = getattr(getattr(self, item), f'read_{item}')()
         logger.info(f'{item}: {current_value}')
-        if abs(current_value - self.last_major_reading[item]) >= self.sensor_thresholds[item]:
+        if abs(current_value - self.last_major_reading[item]) >= self.sensor_thresholds[item] or force_update:
             self.last_major_reading[item] = current_value
             self.publish_mqtt(item, current_value)
             if self.display:
