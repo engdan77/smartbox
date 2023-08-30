@@ -110,6 +110,24 @@ scl_pin: int
 
 
 
+## Configuration
+
+Upload the following as `config.json` unless you wish to use the defaults. 
+
+```
+{
+  "essid": "MYWIFI",
+  "password": "XXXXXXXXX",
+  "mqtt_enabled": "true",
+  "mqtt_broker": "10.1.1.1",
+  "mqtt_topic": "/smartbox",
+  "mqtt_username": "homeassistant",
+  "mqtt_password": "XXXXXXXX",
+}
+```
+
+
+
 
 
 ## Building firmware, flashing and other tips
